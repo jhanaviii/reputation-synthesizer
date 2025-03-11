@@ -356,7 +356,7 @@ function generateRelationshipInsights(person: Person) {
       break;
       
     case 'Active':
-      message = `📊 Relationship Analysis: You have an active relationship with ${person.name} (${relationshipLength}).\n\nInsight: Your response rate is 94% with an average reply time of 8 hours. This indicates strong engagement.\n\nRecommended Action: Share relevant industry insights or schedule a casual check-in. Data shows that maintaining bi-weekly contact optimizes professional relationships at this stage.`;
+      message = `📊 Relationship Analysis: Your relationship with ${person.name} (${relationshipLength}).\n\nInsight: Your response rate is 94% with an average reply time of 8 hours. This indicates strong engagement.\n\nRecommended Action: Share relevant industry insights or schedule a casual check-in. Data shows that maintaining bi-weekly contact optimizes professional relationships at this stage.`;
       recommendedMeetingType = 'lunch meeting';
       recommendedContent = 'a recent case study in their field';
       recommendedContact = 'a potential client for their services';
@@ -649,4 +649,3 @@ export const generateRelationshipInsight = (person: Person): string => {
   
   return `${randomInsight}\n\n${randomRecommendation}`;
 };
-
