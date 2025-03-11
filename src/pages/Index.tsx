@@ -10,22 +10,34 @@ import RelationshipTimeline from '../components/RelationshipTimeline';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import { findPersonByName, Person } from '../utils/mockData';
 import { toast } from "@/components/ui/use-toast";
+import { generateRelationshipInsight } from '../utils/aiService';
 
 const Index = () => {
   const [searchedPerson, setSearchedPerson] = useState<Person | null>(null);
   const [isCommandVisible, setIsCommandVisible] = useState(true);
   const [lastCommand, setLastCommand] = useState<string | null>(null);
+  const [aiResponse, setAIResponse] = useState<string | null>(null);
   
   const handleSearch = (query: string) => {
     const person = findPersonByName(query);
     
     if (person) {
       setSearchedPerson(person);
+      setLastCommand(null);
+      setAIResponse(null);
+      
       toast({
         title: "Person found",
         description: `Found information for ${person.name}`,
         duration: 3000,
       });
+      
+      // Generate an initial AI insight about the relationship
+      setTimeout(() => {
+        const insight = generateRelationshipInsight(person);
+        setAIResponse(insight);
+      }, 1500);
+      
     } else {
       toast({
         title: "Person not found",
@@ -38,13 +50,14 @@ const Index = () => {
   
   const handleCommand = (command: string) => {
     setLastCommand(command);
-    toast({
-      title: "Command received",
-      description: `"${command}"`,
-      duration: 3000,
-    });
-    // In a real app, this would process the command with NLP
-    // and perform the appropriate action
+    
+    // AI response will come from the CommandInput component via the toast system
+    // but we store the last command for display purposes
+  };
+  
+  // Update the person data when tasks are added or completed
+  const handlePersonUpdate = (updatedPerson: Person) => {
+    setSearchedPerson(updatedPerson);
   };
   
   return (
@@ -89,26 +102,36 @@ const Index = () => {
               <div className="premium-card p-6">
                 <h2 className="text-lg font-semibold mb-4">Relationship AI Assistant</h2>
                 
-                {lastCommand && (
+                {(lastCommand || aiResponse) && (
                   <div className="mb-6 p-4 rounded-lg bg-secondary/50 animate-scale-in">
-                    <div className="text-sm font-medium mb-1">Your last command:</div>
-                    <div className="text-sm">{lastCommand}</div>
-                    <div className="mt-3 text-sm text-muted-foreground">
-                      {/* This would be populated with the AI response in a real app */}
-                      This is where the AI response would be displayed based on natural language processing.
-                      Try asking to "summarize my last meeting" or "assign a new task".
-                    </div>
+                    {lastCommand && (
+                      <>
+                        <div className="text-sm font-medium mb-1">Your last command:</div>
+                        <div className="text-sm">{lastCommand}</div>
+                      </>
+                    )}
+                    
+                    {aiResponse && !lastCommand && (
+                      <>
+                        <div className="text-sm font-medium mb-1">AI Insight:</div>
+                        <div className="text-sm">{aiResponse}</div>
+                      </>
+                    )}
                   </div>
                 )}
                 
                 <CommandInput 
                   onSubmit={handleCommand} 
+                  person={searchedPerson}
                   isExpanded={isCommandVisible}
                   onToggleExpand={() => setIsCommandVisible(!isCommandVisible)}
                 />
               </div>
               
-              <TaskManager person={searchedPerson} />
+              <TaskManager 
+                person={searchedPerson} 
+                onPersonUpdate={handlePersonUpdate}
+              />
               <RelationshipTimeline person={searchedPerson} />
             </div>
           </div>

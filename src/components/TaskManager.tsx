@@ -2,12 +2,15 @@
 import { useState } from 'react';
 import { Person } from '../utils/mockData';
 import { Plus, Calendar, Clock, CheckSquare, Square, ArrowUpRight, ArrowRight } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
+import { addTaskToPerson, completeTask } from '../utils/aiService';
 
 interface TaskManagerProps {
   person: Person;
+  onPersonUpdate?: (updatedPerson: Person) => void;
 }
 
-export const TaskManager = ({ person }: TaskManagerProps) => {
+export const TaskManager = ({ person, onPersonUpdate }: TaskManagerProps) => {
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
@@ -61,18 +64,42 @@ export const TaskManager = ({ person }: TaskManagerProps) => {
   
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send data to a backend
-    console.log('Adding task:', {
-      title: newTaskTitle,
-      dueDate: newTaskDueDate,
-      priority: newTaskPriority
-    });
+    
+    if (!newTaskTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "Task title cannot be empty",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    
+    const dueDate = newTaskDueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    // Use our AI service to add the task
+    const updatedPerson = addTaskToPerson(person, newTaskTitle, newTaskPriority, dueDate);
+    
+    // If a callback was provided, update the person in the parent component
+    if (onPersonUpdate) {
+      onPersonUpdate(updatedPerson);
+    }
     
     // Reset form
     setNewTaskTitle('');
     setNewTaskDueDate('');
     setNewTaskPriority('medium');
     setShowAddTask(false);
+  };
+  
+  const handleCompleteTask = (taskId: string) => {
+    // Use our AI service to complete the task
+    const updatedPerson = completeTask(person, taskId);
+    
+    // If a callback was provided, update the person in the parent component
+    if (onPersonUpdate) {
+      onPersonUpdate(updatedPerson);
+    }
   };
   
   return (
@@ -118,7 +145,6 @@ export const TaskManager = ({ person }: TaskManagerProps) => {
                   value={newTaskDueDate}
                   onChange={(e) => setNewTaskDueDate(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm"
-                  required
                 />
               </div>
               
@@ -196,7 +222,10 @@ export const TaskManager = ({ person }: TaskManagerProps) => {
             {pendingTasks.map((task) => (
               <div key={task.id} className="p-3 rounded-lg bg-secondary/30 border border-border/30">
                 <div className="flex items-start gap-3">
-                  <button className="mt-0.5 flex-shrink-0">
+                  <button 
+                    className="mt-0.5 flex-shrink-0"
+                    onClick={() => handleCompleteTask(task.id)}
+                  >
                     <Square className="w-5 h-5" />
                   </button>
                   
