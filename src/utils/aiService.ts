@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { Person } from "./mockData";
 
@@ -342,9 +341,12 @@ function generateRelationshipInsights(person: Person) {
   let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
   let confidence = 0;
   
+  // Calculate relationship length from lastContactedDate
+  const relationshipLength = calculateRelationshipLength(person.lastContactedDate);
+  
   switch (person.relationshipStatus) {
     case 'New':
-      message = `📊 Relationship Analysis: Your connection with ${person.name} is new (${person.relationshipLength} so far).\n\nRecommended Action: Schedule an introductory meeting to establish rapport and learn about their goals at ${person.company}.\n\nInsight: People in similar roles typically establish a communication cadence of twice monthly during the first quarter of a new relationship.`;
+      message = `📊 Relationship Analysis: Your connection with ${person.name} is new (${relationshipLength} so far).\n\nRecommended Action: Schedule an introductory meeting to establish rapport and learn about their goals at ${person.company}.\n\nInsight: People in similar roles typically establish a communication cadence of twice monthly during the first quarter of a new relationship.`;
       recommendedMeetingType = 'virtual coffee chat';
       recommendedContent = 'an industry report related to their role';
       recommendedContact = 'someone in your network with similar interests';
@@ -354,7 +356,7 @@ function generateRelationshipInsights(person: Person) {
       break;
       
     case 'Active':
-      message = `📊 Relationship Analysis: You have an active relationship with ${person.name} (${person.relationshipLength}).\n\nInsight: Your response rate is 94% with an average reply time of 8 hours. This indicates strong engagement.\n\nRecommended Action: Share relevant industry insights or schedule a casual check-in. Data shows that maintaining bi-weekly contact optimizes professional relationships at this stage.`;
+      message = `📊 Relationship Analysis: You have an active relationship with ${person.name} (${relationshipLength}).\n\nInsight: Your response rate is 94% with an average reply time of 8 hours. This indicates strong engagement.\n\nRecommended Action: Share relevant industry insights or schedule a casual check-in. Data shows that maintaining bi-weekly contact optimizes professional relationships at this stage.`;
       recommendedMeetingType = 'lunch meeting';
       recommendedContent = 'a recent case study in their field';
       recommendedContact = 'a potential client for their services';
@@ -364,7 +366,7 @@ function generateRelationshipInsights(person: Person) {
       break;
       
     case 'Inactive':
-      message = `📊 Relationship Analysis: Your relationship with ${person.name} has been inactive for 3 months (total length: ${person.relationshipLength}).\n\nInsight: The optimal re-engagement window is closing, as data shows 75% success rate drops significantly after 4 months of inactivity.\n\nRecommended Action: Reach out with a no-pressure message that references your last interaction about their project at ${person.company}.`;
+      message = `📊 Relationship Analysis: Your relationship with ${person.name} has been inactive for 3 months (total length: ${relationshipLength}).\n\nInsight: The optimal re-engagement window is closing, as data shows 75% success rate drops significantly after 4 months of inactivity.\n\nRecommended Action: Reach out with a no-pressure message that references your last interaction about their project at ${person.company}.`;
       recommendedMeetingType = 'casual video call';
       recommendedContent = 'a news article relevant to their industry';
       recommendedContact = 'a mutual connection to reconnect through';
@@ -374,7 +376,7 @@ function generateRelationshipInsights(person: Person) {
       break;
       
     case 'Close':
-      message = `📊 Relationship Analysis: You have a close relationship with ${person.name} (${person.relationshipLength}).\n\nInsight: Your communication patterns show consistent engagement with peaks around project deadlines. The relationship has a 92% reciprocity rate (balanced give-and-take).\n\nRecommended Action: Consider them for strategic collaborations and maintain your current communication cadence.`;
+      message = `📊 Relationship Analysis: You have a close relationship with ${person.name} (${relationshipLength}).\n\nInsight: Your communication patterns show consistent engagement with peaks around project deadlines. The relationship has a 92% reciprocity rate (balanced give-and-take).\n\nRecommended Action: Consider them for strategic collaborations and maintain your current communication cadence.`;
       recommendedMeetingType = 'strategic planning session';
       recommendedContent = 'exclusive industry insights';
       recommendedContact = 'a high-value connection in your network';
@@ -384,7 +386,7 @@ function generateRelationshipInsights(person: Person) {
       break;
       
     default:
-      message = `📊 Relationship Analysis: Your connection with ${person.name} shows regular interaction patterns over ${person.relationshipLength}.\n\nInsight: Professional relationships with consistent monthly contact have 68% higher retention rates than sporadic interactions.\n\nRecommended Action: Schedule a casual check-in meeting to maintain connection strength.`;
+      message = `📊 Relationship Analysis: Your connection with ${person.name} shows regular interaction patterns over ${relationshipLength}.\n\nInsight: Professional relationships with consistent monthly contact have 68% higher retention rates than sporadic interactions.\n\nRecommended Action: Schedule a casual check-in meeting to maintain connection strength.`;
       recommendedMeetingType = 'brief check-in call';
       recommendedContent = 'an interesting article in their field';
       recommendedContact = 'someone in your network they might benefit from knowing';
@@ -402,6 +404,34 @@ function generateRelationshipInsights(person: Person) {
     sentiment,
     confidence
   };
+}
+
+// Calculate relationship length based on the last contacted date
+function calculateRelationshipLength(lastContactedDate: string): string {
+  const lastContact = new Date(lastContactedDate);
+  const today = new Date();
+  
+  // Calculate difference in milliseconds
+  const diffTime = Math.abs(today.getTime() - lastContact.getTime());
+  
+  // Convert to days
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 30) {
+    return `${diffDays} days`;
+  } else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return `${months} month${months > 1 ? 's' : ''}`;
+  } else {
+    const years = Math.floor(diffDays / 365);
+    const remainingMonths = Math.floor((diffDays % 365) / 30);
+    
+    if (remainingMonths === 0) {
+      return `${years} year${years > 1 ? 's' : ''}`;
+    } else {
+      return `${years} year${years > 1 ? 's' : ''} and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
+    }
+  }
 }
 
 // Extract financial information
@@ -619,3 +649,4 @@ export const generateRelationshipInsight = (person: Person): string => {
   
   return `${randomInsight}\n\n${randomRecommendation}`;
 };
+
