@@ -1,9 +1,9 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { SendHorizontal, Mic, ChevronUp, X, Sparkles } from 'lucide-react';
+import { SendHorizontal, Mic, ChevronUp, Sparkles } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
-import { processCommand } from '../utils/aiService';
 import { Person } from '../utils/mockData';
+import { processCommandAPI, checkBackendAvailability } from '../utils/apiService';
 
 interface AIResponse {
   message: string;
@@ -36,6 +36,7 @@ export const CommandInput = ({
   const [command, setCommand] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [isBackendAvailable, setIsBackendAvailable] = useState<boolean | null>(null);
   const [suggestedCommands, setSuggestedCommands] = useState<string[]>([
     "Summarize my last meeting",
     "Assign a new task",
@@ -44,6 +45,25 @@ export const CommandInput = ({
     "Track progress on current projects"
   ]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Check if backend is available on component mount
+  useEffect(() => {
+    const checkBackend = async () => {
+      const available = await checkBackendAvailability();
+      setIsBackendAvailable(available);
+      console.log(`Backend availability: ${available ? 'Connected' : 'Using simulation'}`);
+      
+      if (available) {
+        toast({
+          title: "Connected to AI Backend",
+          description: "Using Python ML models for enhanced AI processing.",
+          duration: 3000,
+        });
+      }
+    };
+    
+    checkBackend();
+  }, []);
   
   // Auto-resize textarea
   useEffect(() => {
@@ -60,18 +80,15 @@ export const CommandInput = ({
     }
   }, [autoFocus]);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (command.trim()) {
       onSubmit(command);
       setIsThinking(true);
       
-      // Process the command with our AI service
-      setTimeout(() => {
-        setIsThinking(false);
-        
-        // Process the command with our AI service
-        const aiResponse = processCommand(command, person);
+      try {
+        // Process the command with the Python backend (or fall back to frontend)
+        const aiResponse = await processCommandAPI(command, person);
         
         // Update parent component with AI response
         if (onAIResponse) {
@@ -88,9 +105,18 @@ export const CommandInput = ({
           description: aiResponse.message,
           duration: 10000,
         });
-      }, 1200);
-      
-      setCommand("");
+      } catch (error) {
+        console.error('Error processing command:', error);
+        toast({
+          title: "Error",
+          description: "Could not process your request. Please try again.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      } finally {
+        setIsThinking(false);
+        setCommand("");
+      }
     }
   };
   
@@ -118,7 +144,14 @@ export const CommandInput = ({
         <div className="px-4 pt-4">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">AI Assistant</span>
+            <span className="text-sm font-medium">
+              AI Assistant
+              {isBackendAvailable !== null && (
+                <span className={`ml-2 text-xs font-normal ${isBackendAvailable ? 'text-green-500' : 'text-yellow-500'}`}>
+                  ({isBackendAvailable ? 'ML Models' : 'Simulation'})
+                </span>
+              )}
+            </span>
           </div>
           
           <div className="flex flex-wrap gap-2 mb-4">
