@@ -12,11 +12,19 @@ import { findPersonByName, Person } from '../utils/mockData';
 import { toast } from "@/components/ui/use-toast";
 import { generateRelationshipInsight } from '../utils/aiService';
 
+interface AIInsight {
+  message: string;
+  sentiment?: 'positive' | 'negative' | 'neutral';
+  confidenceScore?: number;
+  entities?: Array<{name: string, type: string}>;
+  timeEstimate?: string;
+}
+
 const Index = () => {
   const [searchedPerson, setSearchedPerson] = useState<Person | null>(null);
   const [isCommandVisible, setIsCommandVisible] = useState(true);
   const [lastCommand, setLastCommand] = useState<string | null>(null);
-  const [aiResponse, setAIResponse] = useState<string | null>(null);
+  const [aiResponse, setAIResponse] = useState<AIInsight | null>(null);
   
   const handleSearch = (query: string) => {
     const person = findPersonByName(query);
@@ -35,8 +43,12 @@ const Index = () => {
       // Generate an initial AI insight about the relationship
       setTimeout(() => {
         const insight = generateRelationshipInsight(person);
-        setAIResponse(insight);
-      }, 1500);
+        setAIResponse({
+          message: insight,
+          sentiment: 'positive',
+          confidenceScore: Math.floor(Math.random() * 15) + 80 // 80-95% confidence
+        });
+      }, 1000);
       
     } else {
       toast({
@@ -58,6 +70,11 @@ const Index = () => {
   // Update the person data when tasks are added or completed
   const handlePersonUpdate = (updatedPerson: Person) => {
     setSearchedPerson(updatedPerson);
+  };
+  
+  // Update AI response with new insights
+  const handleAIResponse = (response: AIInsight) => {
+    setAIResponse(response);
   };
   
   return (
@@ -111,10 +128,32 @@ const Index = () => {
                       </>
                     )}
                     
-                    {aiResponse && !lastCommand && (
+                    {aiResponse && (
                       <>
-                        <div className="text-sm font-medium mb-1">AI Insight:</div>
-                        <div className="text-sm">{aiResponse}</div>
+                        <div className="text-sm font-medium mb-1 flex items-center gap-2">
+                          AI Insight 
+                          {aiResponse.confidenceScore && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                              {aiResponse.confidenceScore}% confidence
+                            </span>
+                          )}
+                          {aiResponse.sentiment && (
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${
+                              aiResponse.sentiment === 'positive' ? 'bg-green-100 text-green-800' :
+                              aiResponse.sentiment === 'negative' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {aiResponse.sentiment}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm whitespace-pre-line">{aiResponse.message}</div>
+                        
+                        {aiResponse.timeEstimate && (
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            Time estimate: {aiResponse.timeEstimate}
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
@@ -125,6 +164,7 @@ const Index = () => {
                   person={searchedPerson}
                   isExpanded={isCommandVisible}
                   onToggleExpand={() => setIsCommandVisible(!isCommandVisible)}
+                  onAIResponse={handleAIResponse}
                 />
               </div>
               

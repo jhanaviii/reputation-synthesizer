@@ -5,6 +5,15 @@ import { toast } from "@/components/ui/use-toast";
 import { processCommand } from '../utils/aiService';
 import { Person } from '../utils/mockData';
 
+interface AIResponse {
+  message: string;
+  sentiment?: 'positive' | 'negative' | 'neutral';
+  confidenceScore?: number;
+  entities?: Array<{name: string, type: string}>;
+  timeEstimate?: string;
+  suggestedActions?: string[];
+}
+
 interface CommandInputProps {
   onSubmit: (command: string) => void;
   person: Person;
@@ -12,6 +21,7 @@ interface CommandInputProps {
   autoFocus?: boolean;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
+  onAIResponse?: (response: AIResponse) => void;
 }
 
 export const CommandInput = ({
@@ -20,7 +30,8 @@ export const CommandInput = ({
   placeholder = "Ask anything about this relationship...",
   autoFocus = false,
   isExpanded = true,
-  onToggleExpand
+  onToggleExpand,
+  onAIResponse
 }: CommandInputProps) => {
   const [command, setCommand] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -55,12 +66,17 @@ export const CommandInput = ({
       onSubmit(command);
       setIsThinking(true);
       
-      // Simulate AI processing time (in a real app, this would be an actual API call)
+      // Process the command with our AI service
       setTimeout(() => {
         setIsThinking(false);
         
         // Process the command with our AI service
         const aiResponse = processCommand(command, person);
+        
+        // Update parent component with AI response
+        if (onAIResponse) {
+          onAIResponse(aiResponse);
+        }
         
         // Update suggested commands based on AI response
         if (aiResponse.suggestedActions) {
