@@ -23,10 +23,10 @@ export const SearchBar = ({
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   
-  // Load all people as initial suggestions
+  // Load all people as initial suggestions (more than before)
   useEffect(() => {
     const allPeople = getAllPeople();
-    setSuggestions(allPeople.slice(0, 10)); // Show top 10 initially
+    setSuggestions(allPeople.slice(0, 5)); // Show top 5 initially instead of just 3
     console.log(`Loaded ${allPeople.length} people for search suggestions`);
   }, []);
   
@@ -34,7 +34,7 @@ export const SearchBar = ({
   useEffect(() => {
     const allPeople = getAllPeople();
     if (query.trim() === '') {
-      setSuggestions(allPeople.slice(0, 10)); // Show top 10 when empty
+      setSuggestions(allPeople.slice(0, 5)); // Show top 5 when empty
     } else {
       const filtered = allPeople.filter(person => 
         person.name.toLowerCase().includes(query.toLowerCase())
@@ -53,16 +53,18 @@ export const SearchBar = ({
   
   const clearSearch = () => {
     setQuery("");
-    setSuggestions(getAllPeople().slice(0, 10));
+    setSuggestions(getAllPeople().slice(0, 5));
     if (inputRef.current) {
       inputRef.current.focus();
     }
   };
   
-  const handleSuggestionClick = (personName: string) => {
+  const handleSuggestionClick = (personId: string, personName: string) => {
     setQuery(personName);
     onSearch(personName);
     setShowSuggestions(false);
+    // Navigate to the person detail page
+    navigate(`/person/${personId}`);
   };
   
   // Handle clicks outside of suggestions to close the dropdown
@@ -151,7 +153,7 @@ export const SearchBar = ({
         </div>
       </form>
       
-      {/* User suggestions dropdown */}
+      {/* User suggestions dropdown - Show by default, not just when typing */}
       {showSuggestions && suggestions.length > 0 && (
         <div 
           ref={suggestionsRef}
@@ -166,7 +168,7 @@ export const SearchBar = ({
               <div 
                 key={person.id}
                 className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer transition-colors"
-                onClick={() => handleSuggestionClick(person.name)}
+                onClick={() => handleSuggestionClick(person.id, person.name)}
               >
                 <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-muted">
                   {person.profileImage ? (
@@ -179,10 +181,17 @@ export const SearchBar = ({
                         const target = e.target as HTMLImageElement;
                         target.onerror = null;
                         target.style.display = 'none';
-                        target.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'bg-primary/10', 'text-primary');
-                        const userIcon = document.createElement('div');
-                        userIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
-                        target.parentElement?.appendChild(userIcon);
+                        
+                        // Make sure parent has appropriate styles
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.classList.add('flex', 'items-center', 'justify-center', 'bg-primary/10', 'text-primary');
+                          
+                          // Create and append user icon
+                          const userIcon = document.createElement('div');
+                          userIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+                          parent.appendChild(userIcon);
+                        }
                       }}
                     />
                   ) : (
