@@ -1,0 +1,836 @@
+
+[
+  {
+    "id": "1",
+    "name": "Alex Chen",
+    "profileImage": "https://randomuser.me/api/portraits/men/32.jpg",
+    "role": "Product Designer",
+    "company": "Designify",
+    "email": "alex.chen@example.com",
+    "phone": "+1 (555) 123-4567",
+    "reputationScore": 85,
+    "lastContactedDate": "2023-06-15",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/alexchen",
+        "username": "alexchen",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/alexchendesign",
+        "username": "alexchendesign",
+        "icon": "twitter"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-10",
+        "title": "Website Redesign Kickoff",
+        "summary": "Discussed project goals, timeline, and deliverables for the website redesign project. Alex presented initial mood boards and wireframes. We agreed on a minimalist approach with a focus on user experience.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Send final homepage designs",
+        "dueDate": "2023-06-20",
+        "status": "in-progress",
+        "priority": "high"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 500,
+        "currency": "USD",
+        "date": "2023-05-15",
+        "description": "Initial design consultation",
+        "type": "paid"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-10",
+        "type": "meeting",
+        "title": "Website Redesign Kickoff",
+        "description": "Initial project meeting to discuss goals and timeline"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Samantha Taylor",
+    "profileImage": "https://randomuser.me/api/portraits/women/28.jpg",
+    "role": "Marketing Director",
+    "company": "GrowthLabs",
+    "email": "sam.taylor@example.com",
+    "phone": "+1 (555) 987-6543",
+    "reputationScore": 92,
+    "lastContactedDate": "2023-06-05",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/samtaylor",
+        "username": "samtaylor",
+        "icon": "linkedin"
+      }
+    ],
+    "relationshipStatus": "Close",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-05",
+        "title": "Q3 Marketing Strategy",
+        "summary": "Outlined the marketing strategy for Q3. Key focus areas include social media campaigns, content marketing, and influencer partnerships. Budget approved for all proposed initiatives.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Finalize influencer list",
+        "dueDate": "2023-06-18",
+        "status": "pending",
+        "priority": "high"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 1200,
+        "currency": "USD",
+        "date": "2023-05-30",
+        "description": "Marketing consultation retainer",
+        "type": "received"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-05",
+        "type": "meeting",
+        "title": "Q3 Marketing Strategy",
+        "description": "Strategic planning meeting for upcoming quarter"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "David Kim",
+    "profileImage": "https://randomuser.me/api/portraits/men/45.jpg",
+    "role": "Backend Developer",
+    "company": "TechStack",
+    "email": "david.kim@example.com",
+    "phone": "+1 (555) 765-4321",
+    "reputationScore": 78,
+    "lastContactedDate": "2023-05-20",
+    "socialMedia": [
+      {
+        "platform": "GitHub",
+        "url": "https://github.com/davidkim",
+        "username": "davidkim",
+        "icon": "github"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-05-20",
+        "title": "API Integration Planning",
+        "summary": "Discussed the requirements for integrating the new payment API. David provided valuable insights on potential challenges and security considerations.",
+        "sentiment": "neutral"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Implement payment gateway",
+        "dueDate": "2023-06-30",
+        "status": "in-progress",
+        "priority": "high"
+      }
+    ],
+    "finances": [],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-05-20",
+        "type": "meeting",
+        "title": "API Integration Planning",
+        "description": "Technical discussion about payment API integration"
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Maria Rodriguez",
+    "profileImage": "https://randomuser.me/api/portraits/women/33.jpg",
+    "role": "UI/UX Designer",
+    "company": "CreativeMinds",
+    "email": "maria.rodriguez@example.com",
+    "phone": "+1 (555) 234-5678",
+    "reputationScore": 91,
+    "lastContactedDate": "2023-06-02",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/mariarodriguez",
+        "username": "mariarodriguez",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "Dribbble",
+        "url": "https://dribbble.com/mariarodriguez",
+        "username": "mariarodriguez",
+        "icon": "dribbble"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-01",
+        "title": "Mobile App Design Review",
+        "summary": "Reviewed the latest mobile app designs. Maria presented new wireframes for the checkout process. Discussed user flow improvements and accessibility considerations.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Finalize app icon design",
+        "dueDate": "2023-06-12",
+        "status": "completed",
+        "priority": "medium"
+      },
+      {
+        "id": "t2",
+        "title": "Create onboarding screens",
+        "dueDate": "2023-06-25",
+        "status": "in-progress",
+        "priority": "high"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 850,
+        "currency": "USD",
+        "date": "2023-05-25",
+        "description": "App design consultation",
+        "type": "paid"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-01",
+        "type": "meeting",
+        "title": "Mobile App Design Review",
+        "description": "Review session for the mobile app design"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-06-12",
+        "type": "task",
+        "title": "App icon design",
+        "description": "Completed app icon design task"
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "name": "James Wilson",
+    "profileImage": "https://randomuser.me/api/portraits/men/22.jpg",
+    "role": "Sales Director",
+    "company": "SalesPro",
+    "email": "james.wilson@example.com",
+    "phone": "+1 (555) 876-5432",
+    "reputationScore": 88,
+    "lastContactedDate": "2023-06-10",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/jameswilson",
+        "username": "jameswilson",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/jameswilson",
+        "username": "jameswilson",
+        "icon": "twitter"
+      }
+    ],
+    "relationshipStatus": "New",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-08",
+        "title": "Sales Partnership Discussion",
+        "summary": "Initial meeting to discuss potential sales partnership. James presented their company's sales approach and target markets. Identified several synergies between our businesses.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Draft partnership proposal",
+        "dueDate": "2023-06-20",
+        "status": "pending",
+        "priority": "high"
+      },
+      {
+        "id": "t2",
+        "title": "Schedule follow-up call",
+        "dueDate": "2023-06-15",
+        "status": "pending",
+        "priority": "medium"
+      }
+    ],
+    "finances": [],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-08",
+        "type": "meeting",
+        "title": "Sales Partnership Discussion",
+        "description": "Initial partnership exploration meeting"
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "name": "Emily Johnson",
+    "profileImage": "https://randomuser.me/api/portraits/women/12.jpg",
+    "role": "Content Strategist",
+    "company": "ContentWave",
+    "email": "emily.johnson@example.com",
+    "phone": "+1 (555) 345-6789",
+    "reputationScore": 82,
+    "lastContactedDate": "2023-05-28",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/emilyjohnson",
+        "username": "emilyjohnson",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/emilyjcontent",
+        "username": "emilyjcontent",
+        "icon": "twitter"
+      },
+      {
+        "platform": "Medium",
+        "url": "https://medium.com/@emilyjohnson",
+        "username": "@emilyjohnson",
+        "icon": "medium"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-05-27",
+        "title": "Content Calendar Planning",
+        "summary": "Planned content strategy for Q3. Emily suggested focusing on tutorial-style content and industry insights. Discussed SEO optimization and distribution channels.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Review draft blog posts",
+        "dueDate": "2023-06-15",
+        "status": "in-progress",
+        "priority": "medium"
+      },
+      {
+        "id": "t2",
+        "title": "Finalize Q3 content calendar",
+        "dueDate": "2023-06-30",
+        "status": "pending",
+        "priority": "high"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 600,
+        "currency": "USD",
+        "date": "2023-05-15",
+        "description": "Content strategy consultation",
+        "type": "paid"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-05-27",
+        "type": "meeting",
+        "title": "Content Calendar Planning",
+        "description": "Strategic planning for Q3 content"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-05-15",
+        "type": "payment",
+        "title": "Content consultation",
+        "description": "Paid $600 for content strategy consultation"
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Michael Brown",
+    "profileImage": "https://randomuser.me/api/portraits/men/41.jpg",
+    "role": "Financial Advisor",
+    "company": "WealthWise",
+    "email": "michael.brown@example.com",
+    "phone": "+1 (555) 456-7890",
+    "reputationScore": 95,
+    "lastContactedDate": "2023-06-12",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/michaelbrown",
+        "username": "michaelbrown",
+        "icon": "linkedin"
+      }
+    ],
+    "relationshipStatus": "Close",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-11",
+        "title": "Investment Strategy Review",
+        "summary": "Annual review of investment portfolio performance. Michael provided insights on market trends and suggested rebalancing certain assets. Discussed risk tolerance and long-term goals.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Update investment portfolio allocation",
+        "dueDate": "2023-06-25",
+        "status": "pending",
+        "priority": "high"
+      },
+      {
+        "id": "t2",
+        "title": "Review retirement planning documents",
+        "dueDate": "2023-07-10",
+        "status": "pending",
+        "priority": "medium"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 1500,
+        "currency": "USD",
+        "date": "2023-01-15",
+        "description": "Annual financial planning fee",
+        "type": "paid"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-11",
+        "type": "meeting",
+        "title": "Investment Strategy Review",
+        "description": "Annual portfolio review meeting"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-01-15",
+        "type": "payment",
+        "title": "Annual fee",
+        "description": "Paid $1500 for annual financial planning services"
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "name": "Sarah Davis",
+    "profileImage": "https://randomuser.me/api/portraits/women/16.jpg",
+    "role": "Project Manager",
+    "company": "ProjectPro",
+    "email": "sarah.davis@example.com",
+    "phone": "+1 (555) 567-8901",
+    "reputationScore": 87,
+    "lastContactedDate": "2023-06-03",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/sarahdavis",
+        "username": "sarahdavis",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/sarahdavispm",
+        "username": "sarahdavispm",
+        "icon": "twitter"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-02",
+        "title": "Project Status Update",
+        "summary": "Sarah provided updates on the current project timeline. Two milestones have been completed ahead of schedule. Discussed resource allocation for the next phase and identified potential bottlenecks.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Update project timeline document",
+        "dueDate": "2023-06-10",
+        "status": "completed",
+        "priority": "high"
+      },
+      {
+        "id": "t2",
+        "title": "Schedule resource planning meeting",
+        "dueDate": "2023-06-15",
+        "status": "pending",
+        "priority": "medium"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 2500,
+        "currency": "USD",
+        "date": "2023-05-01",
+        "description": "Project management retainer",
+        "type": "paid"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-02",
+        "type": "meeting",
+        "title": "Project Status Update",
+        "description": "Regular project status meeting"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-06-10",
+        "type": "task",
+        "title": "Timeline document",
+        "description": "Completed project timeline update"
+      }
+    ]
+  },
+  {
+    "id": "9",
+    "name": "Robert Martinez",
+    "profileImage": "https://randomuser.me/api/portraits/men/25.jpg",
+    "role": "Legal Counsel",
+    "company": "LegalEdge",
+    "email": "robert.martinez@example.com",
+    "phone": "+1 (555) 678-9012",
+    "reputationScore": 90,
+    "lastContactedDate": "2023-05-15",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/robertmartinez",
+        "username": "robertmartinez",
+        "icon": "linkedin"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-05-15",
+        "title": "Contract Review",
+        "summary": "Reviewed new client contract template. Robert suggested several revisions to protect intellectual property rights and clarify payment terms. Discussed potential liability issues and mitigation strategies.",
+        "sentiment": "neutral"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Revise contract based on feedback",
+        "dueDate": "2023-06-01",
+        "status": "completed",
+        "priority": "high"
+      },
+      {
+        "id": "t2",
+        "title": "Schedule follow-up review",
+        "dueDate": "2023-06-15",
+        "status": "pending",
+        "priority": "medium"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 1200,
+        "currency": "USD",
+        "date": "2023-05-16",
+        "description": "Legal consultation",
+        "type": "paid"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-05-15",
+        "type": "meeting",
+        "title": "Contract Review",
+        "description": "Legal review of new client contract template"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-05-16",
+        "type": "payment",
+        "title": "Legal fees",
+        "description": "Paid $1200 for legal consultation services"
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "name": "Jennifer Lee",
+    "profileImage": "https://randomuser.me/api/portraits/women/24.jpg",
+    "role": "Marketing Consultant",
+    "company": "BrandBoost",
+    "email": "jennifer.lee@example.com",
+    "phone": "+1 (555) 789-0123",
+    "reputationScore": 93,
+    "lastContactedDate": "2023-06-07",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/jenniferlee",
+        "username": "jenniferlee",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/jenniferleemarketing",
+        "username": "jenniferleemarketing",
+        "icon": "twitter"
+      },
+      {
+        "platform": "Instagram",
+        "url": "https://instagram.com/jenniferleemarketing",
+        "username": "jenniferleemarketing",
+        "icon": "instagram"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-07",
+        "title": "Brand Strategy Session",
+        "summary": "Discussed brand positioning and messaging strategies. Jennifer presented market research findings and competitor analysis. Identified key differentiators and target audience segments for upcoming campaign.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Develop campaign messaging framework",
+        "dueDate": "2023-06-25",
+        "status": "in-progress",
+        "priority": "high"
+      },
+      {
+        "id": "t2",
+        "title": "Create audience persona documents",
+        "dueDate": "2023-06-20",
+        "status": "pending",
+        "priority": "medium"
+      }
+    ],
+    "finances": [
+      {
+        "id": "f1",
+        "amount": 2000,
+        "currency": "USD",
+        "date": "2023-06-01",
+        "description": "Brand strategy consulting",
+        "type": "paid"
+      }
+    ],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-07",
+        "type": "meeting",
+        "title": "Brand Strategy Session",
+        "description": "Strategic session for brand positioning"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-06-01",
+        "type": "payment",
+        "title": "Strategy consulting",
+        "description": "Paid $2000 for brand strategy consulting services"
+      }
+    ]
+  },
+  {
+    "id": "11",
+    "name": "Thomas Anderson",
+    "profileImage": "https://randomuser.me/api/portraits/men/33.jpg",
+    "role": "Data Scientist",
+    "company": "DataInsights",
+    "email": "thomas.anderson@example.com",
+    "phone": "+1 (555) 890-1234",
+    "reputationScore": 85,
+    "lastContactedDate": "2023-05-25",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/thomasanderson",
+        "username": "thomasanderson",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "GitHub",
+        "url": "https://github.com/thomasanderson",
+        "username": "thomasanderson",
+        "icon": "github"
+      }
+    ],
+    "relationshipStatus": "New",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-05-25",
+        "title": "Data Analysis Requirements",
+        "summary": "Initial meeting to discuss data analysis needs. Thomas provided overview of their machine learning capabilities and previous case studies. Discussed potential application to our customer segmentation challenges.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Share historical customer data (anonymized)",
+        "dueDate": "2023-06-10",
+        "status": "completed",
+        "priority": "high"
+      },
+      {
+        "id": "t2",
+        "title": "Review initial analysis proposal",
+        "dueDate": "2023-06-30",
+        "status": "pending",
+        "priority": "medium"
+      }
+    ],
+    "finances": [],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-05-25",
+        "type": "meeting",
+        "title": "Data Analysis Requirements",
+        "description": "Initial discussion of data analysis needs"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-06-10",
+        "type": "task",
+        "title": "Data sharing",
+        "description": "Completed sharing anonymized customer data"
+      }
+    ]
+  },
+  {
+    "id": "12",
+    "name": "Lisa Wang",
+    "profileImage": "https://randomuser.me/api/portraits/women/42.jpg",
+    "role": "Chief Technology Officer",
+    "company": "TechNova",
+    "email": "lisa.wang@example.com",
+    "phone": "+1 (555) 901-2345",
+    "reputationScore": 96,
+    "lastContactedDate": "2023-06-01",
+    "socialMedia": [
+      {
+        "platform": "LinkedIn",
+        "url": "https://linkedin.com/in/lisawang",
+        "username": "lisawang",
+        "icon": "linkedin"
+      },
+      {
+        "platform": "Twitter",
+        "url": "https://twitter.com/lisawangtech",
+        "username": "lisawangtech",
+        "icon": "twitter"
+      },
+      {
+        "platform": "GitHub",
+        "url": "https://github.com/lisawang",
+        "username": "lisawang",
+        "icon": "github"
+      }
+    ],
+    "relationshipStatus": "Active",
+    "meetings": [
+      {
+        "id": "m1",
+        "date": "2023-06-01",
+        "title": "Technology Partnership Discussion",
+        "summary": "Met with Lisa to explore potential technology partnership. Discussed integration opportunities between our platforms and shared technology roadmaps. Identified several areas for collaboration on AI and machine learning initiatives.",
+        "sentiment": "positive"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Schedule technical team meeting",
+        "dueDate": "2023-06-15",
+        "status": "completed",
+        "priority": "high"
+      },
+      {
+        "id": "t2",
+        "title": "Draft partnership agreement",
+        "dueDate": "2023-07-01",
+        "status": "pending",
+        "priority": "high"
+      }
+    ],
+    "finances": [],
+    "timeline": [
+      {
+        "id": "tl1",
+        "date": "2023-06-01",
+        "type": "meeting",
+        "title": "Technology Partnership Discussion",
+        "description": "Initial partnership exploration meeting"
+      },
+      {
+        "id": "tl2",
+        "date": "2023-06-15",
+        "type": "task",
+        "title": "Team meeting",
+        "description": "Completed scheduling of technical team meeting"
+      }
+    ]
+  }
+]

@@ -25,18 +25,21 @@ export const SearchBar = ({
   
   // Load all people as initial suggestions
   useEffect(() => {
-    setSuggestions(getAllPeople().slice(0, 5)); // Show top 5 initially
+    const allPeople = getAllPeople();
+    setSuggestions(allPeople.slice(0, 10)); // Show top 10 initially
+    console.log(`Loaded ${allPeople.length} people for search suggestions`);
   }, []);
   
   // Filter suggestions based on query
   useEffect(() => {
+    const allPeople = getAllPeople();
     if (query.trim() === '') {
-      setSuggestions(getAllPeople().slice(0, 5)); // Show top 5 when empty
+      setSuggestions(allPeople.slice(0, 10)); // Show top 10 when empty
     } else {
-      const filtered = getAllPeople().filter(person => 
+      const filtered = allPeople.filter(person => 
         person.name.toLowerCase().includes(query.toLowerCase())
       );
-      setSuggestions(filtered.slice(0, 7)); // Show up to 7 matches when typing
+      setSuggestions(filtered.slice(0, 12)); // Show up to 12 matches when typing
     }
   }, [query]);
   
@@ -50,7 +53,7 @@ export const SearchBar = ({
   
   const clearSearch = () => {
     setQuery("");
-    setSuggestions(getAllPeople().slice(0, 5));
+    setSuggestions(getAllPeople().slice(0, 10));
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -155,7 +158,7 @@ export const SearchBar = ({
           className="absolute z-20 mt-2 w-full bg-background rounded-lg shadow-lg border border-border overflow-hidden"
         >
           <div className="p-2 text-xs text-muted-foreground font-medium">
-            {query.trim() === '' ? 'Suggested Users' : 'Search Results'}
+            {query.trim() === '' ? 'Suggested Users' : 'Search Results'} ({suggestions.length} results)
           </div>
           
           <div className="max-h-[350px] overflow-y-auto">
@@ -171,6 +174,16 @@ export const SearchBar = ({
                       src={person.profileImage} 
                       alt={person.name} 
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.style.display = 'none';
+                        target.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'bg-primary/10', 'text-primary');
+                        const userIcon = document.createElement('div');
+                        userIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+                        target.parentElement?.appendChild(userIcon);
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
