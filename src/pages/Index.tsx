@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from '../layouts/MainLayout';
 import LandingHero from '../components/LandingHero';
 import SearchBar from '../components/SearchBar';
@@ -8,9 +8,10 @@ import CommandInput from '../components/CommandInput';
 import TaskManager from '../components/TaskManager';
 import RelationshipTimeline from '../components/RelationshipTimeline';
 import SocialMediaLinks from '../components/SocialMediaLinks';
-import { findPersonByName, Person } from '../utils/mockData';
+import { findPersonByName, Person, getAllPeople } from '../utils/mockData';
 import { toast } from "@/components/ui/use-toast";
 import { generateRelationshipInsight } from '../utils/aiService';
+import { checkBackendAvailability } from '../utils/apiService';
 
 interface AIInsight {
   message: string;
@@ -25,6 +26,31 @@ const Index = () => {
   const [isCommandVisible, setIsCommandVisible] = useState(true);
   const [lastCommand, setLastCommand] = useState<string | null>(null);
   const [aiResponse, setAIResponse] = useState<AIInsight | null>(null);
+  const [isBackendAvailable, setIsBackendAvailable] = useState(false);
+  const [allPeople, setAllPeople] = useState<Person[]>([]);
+  
+  // Check backend availability on load
+  useEffect(() => {
+    const checkBackend = async () => {
+      const available = await checkBackendAvailability();
+      setIsBackendAvailable(available);
+      
+      if (available) {
+        toast({
+          title: "AI Backend Connected",
+          description: "Using real AI models for enhanced features",
+          duration: 3000,
+        });
+      }
+    };
+    
+    checkBackend();
+  }, []);
+  
+  // Load all people on mount
+  useEffect(() => {
+    setAllPeople(getAllPeople());
+  }, []);
   
   const handleSearch = (query: string) => {
     const person = findPersonByName(query);
@@ -91,12 +117,36 @@ const Index = () => {
                 Search for a contact to view their online presence, manage your relationship, 
                 and get AI-powered insights about your interactions.
               </p>
+              {isBackendAvailable && (
+                <div className="mt-2 text-sm text-primary font-medium">
+                  AI Backend Connected: Using real ML models for enhanced features
+                </div>
+              )}
             </div>
             
             <SearchBar 
               onSearch={handleSearch} 
-              placeholder="Try searching for 'Alex', 'Samantha', or 'David'..."
+              placeholder="Search for anyone, or see suggestions..."
             />
+            
+            {allPeople.length > 0 && (
+              <div className="mt-10 text-center">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Dataset includes {allPeople.length} people - Try searching for one of these:
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {allPeople.slice(0, 5).map(person => (
+                    <button
+                      key={person.id}
+                      onClick={() => handleSearch(person.name)}
+                      className="px-3 py-1 rounded-full bg-secondary/60 hover:bg-secondary transition-colors text-sm"
+                    >
+                      {person.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </>
       ) : (
