@@ -1,7 +1,10 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Users, Calendar, CheckSquare, LineChart, Clock, Plus, MessageSquare } from 'lucide-react';
 import { useFadeIn } from '../utils/animations';
+import { mockPeople } from '../utils/mockData';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { Avatar } from './ui/avatar';
 
 export const LandingHero = () => {
   const { domRef, isVisible } = useFadeIn();
@@ -19,6 +22,13 @@ export const LandingHero = () => {
   const deleteSpeedRef = useRef(30);
   const delayRef = useRef(2000);
   const isDeleting = useRef(false);
+  
+  // Get sample data for dashboard preview
+  const samplePeople = mockPeople.slice(0, 4);
+  const sampleTasks = mockPeople
+    .slice(0, 3)
+    .flatMap(person => person.tasks.slice(0, 2))
+    .slice(0, 5);
   
   useEffect(() => {
     const typeWriter = () => {
@@ -83,22 +93,156 @@ export const LandingHero = () => {
         </div>
       </div>
       
-      <div className="w-full max-w-5xl mt-20 relative">
-        <div className="aspect-[16/9] rounded-xl overflow-hidden shadow-2xl animate-float premium-card">
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M8 14C8 14 9.5 16 12 16C14.5 16 16 14 16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M9 9H9.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M15 9H15.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+      <div className="w-full max-w-6xl mt-20 relative">
+        <div className="aspect-[16/9] rounded-xl overflow-hidden shadow-2xl animate-float premium-card bg-background border border-border">
+          <div className="w-full h-full p-4 md:p-6">
+            {/* Dashboard Header */}
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-xl font-bold">Relationship Dashboard</h3>
+                <p className="text-muted-foreground text-sm">Manage your network effectively</p>
               </div>
-              <h3 className="text-2xl font-medium mb-2">Dashboard Preview</h3>
-              <p className="text-muted-foreground text-sm">
-                Your interactive relationship management workspace
-              </p>
+              <div className="flex gap-2">
+                <button className="px-3 py-1.5 rounded-md bg-secondary text-xs">
+                  <Clock className="h-3.5 w-3.5 inline mr-1" />
+                  Last 30 days
+                </button>
+                <button className="px-3 py-1.5 rounded-md bg-primary text-white text-xs">
+                  <Plus className="h-3.5 w-3.5 inline mr-1" />
+                  Add Contact
+                </button>
+              </div>
+            </div>
+            
+            {/* Dashboard Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Contacts Card */}
+              <Card className="border-border shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <Users className="h-4 w-4 mr-2 text-primary" />
+                    Recent Contacts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {samplePeople.map((person) => (
+                      <div key={person.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-secondary/20 transition-colors">
+                        <Avatar className="h-8 w-8">
+                          <img src={person.profileImage} alt={person.name} className="h-full w-full object-cover" />
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{person.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{person.company}</p>
+                        </div>
+                        <div className="text-xs px-1.5 py-0.5 rounded bg-secondary">
+                          {person.relationshipStatus}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Tasks Card */}
+              <Card className="border-border shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <CheckSquare className="h-4 w-4 mr-2 text-primary" />
+                    Pending Tasks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {sampleTasks.map((task) => (
+                      <div key={task.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-secondary/20 transition-colors">
+                        <div className={`h-2 w-2 rounded-full ${
+                          task.priority === 'high' ? 'bg-red-500' : 
+                          task.priority === 'medium' ? 'bg-yellow-500' : 
+                          'bg-green-500'
+                        }`} />
+                        <p className="text-xs flex-1 truncate">{task.title}</p>
+                        <span className="text-xs text-muted-foreground">{task.dueDate}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Analytics Card */}
+              <Card className="border-border shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <LineChart className="h-4 w-4 mr-2 text-primary" />
+                    Relationship Health
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">Active Relationships</span>
+                      <div className="w-2/3 bg-secondary h-2 rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full" style={{ width: '68%' }}></div>
+                      </div>
+                      <span className="text-xs font-medium">68%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">Follow-up Rate</span>
+                      <div className="w-2/3 bg-secondary h-2 rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full" style={{ width: '42%' }}></div>
+                      </div>
+                      <span className="text-xs font-medium">42%</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">Task Completion</span>
+                      <div className="w-2/3 bg-secondary h-2 rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full" style={{ width: '75%' }}></div>
+                      </div>
+                      <span className="text-xs font-medium">75%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Recent Activity */}
+            <div className="mt-4">
+              <Card className="border-border shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <MessageSquare className="h-4 w-4 mr-2 text-primary" />
+                    Recent Meetings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {mockPeople.slice(0, 3).map((person) => (
+                      person.meetings[0] && (
+                        <div key={person.meetings[0].id} className="p-3 rounded-md border border-border hover:bg-secondary/10 transition-colors">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Avatar className="h-6 w-6">
+                              <img src={person.profileImage} alt={person.name} className="h-full w-full object-cover" />
+                            </Avatar>
+                            <p className="text-xs font-medium truncate">{person.name}</p>
+                          </div>
+                          <p className="text-xs font-medium truncate mb-1">{person.meetings[0].title}</p>
+                          <p className="text-xs text-muted-foreground truncate mb-2">{person.meetings[0].summary}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground">{person.meetings[0].date}</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${
+                              person.meetings[0].sentiment === 'positive' ? 'bg-green-100 text-green-800' :
+                              person.meetings[0].sentiment === 'negative' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {person.meetings[0].sentiment}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
