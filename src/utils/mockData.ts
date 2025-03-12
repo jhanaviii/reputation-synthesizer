@@ -60,6 +60,11 @@ export const findPersonByName = (name: string): Person | undefined => {
   );
 };
 
+// Add the missing findPersonById function to fix the error
+export const findPersonById = (id: string): Person | undefined => {
+  return mockPeople.find(person => person.id === id);
+};
+
 export const getAllPeople = (): Person[] => {
   return mockPeople;
 };
