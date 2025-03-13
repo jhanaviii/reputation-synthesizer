@@ -5,10 +5,12 @@ import { useFadeIn } from '../utils/animations';
 import { mockPeople } from '../utils/mockData';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Avatar } from './ui/avatar';
+import { AddContactDialog } from './AddContactDialog';
 
 export const LandingHero = () => {
   const { domRef, isVisible } = useFadeIn();
   const [typedText, setTypedText] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
   const phrases = [
     'Track relationships.',
     'Monitor online presence.',
@@ -59,6 +61,12 @@ export const LandingHero = () => {
     const timer = setTimeout(typeWriter, 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Handle contact added
+  const handleContactAdded = () => {
+    // Force refresh of the dashboard preview
+    setRefreshKey(prev => prev + 1);
+  };
   
   return (
     <div 
@@ -93,7 +101,7 @@ export const LandingHero = () => {
         </div>
       </div>
       
-      <div className="w-full max-w-6xl mt-20 relative">
+      <div className="w-full max-w-6xl mt-20 relative" key={refreshKey}>
         <div className="aspect-[16/9] rounded-xl overflow-hidden shadow-2xl animate-float premium-card bg-background border border-border">
           <div className="w-full h-full p-4 md:p-6">
             {/* Dashboard Header */}
@@ -107,10 +115,7 @@ export const LandingHero = () => {
                   <Clock className="h-3.5 w-3.5 inline mr-1" />
                   Last 30 days
                 </button>
-                <button className="px-3 py-1.5 rounded-md bg-primary text-white text-xs">
-                  <Plus className="h-3.5 w-3.5 inline mr-1" />
-                  Add Contact
-                </button>
+                <AddContactDialog onContactAdded={handleContactAdded} />
               </div>
             </div>
             

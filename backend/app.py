@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
@@ -10,6 +9,7 @@ from models.task_manager import TaskManager
 from models.follow_up_recommender import FollowUpRecommender
 from models.meeting_scheduler import MeetingScheduler
 from models.progress_analyzer import ProgressAnalyzer
+from models.profile_scraper import ProfileScraper
 from data.user_repository import UserRepository
 
 # Configure logging
@@ -29,6 +29,7 @@ task_manager = TaskManager()
 follow_up_recommender = FollowUpRecommender()
 meeting_scheduler = MeetingScheduler()
 progress_analyzer = ProgressAnalyzer()
+profile_scraper = ProfileScraper()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -102,6 +103,96 @@ def process_command():
         
     except Exception as e:
         logger.error(f"Error processing command: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/api/profiles/search', methods=['GET'])
+def search_profiles():
+    """Search for online profiles matching a query"""
+    try:
+        query = request.args.get('query', '')
+        limit = int(request.args.get('limit', 5))
+        
+        if not query:
+            return jsonify({"error": "Query parameter is required"}), 400
+        
+        # Use profile scraper to search for profiles
+        results = profile_scraper.search_profiles(query, limit)
+        
+        return jsonify(results)
+        
+    except Exception as e:
+        logger.error(f"Error searching profiles: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/api/profiles/details', methods=['GET'])
+def get_profile_details():
+    """Get detailed information for a specific profile"""
+    try:
+        profile_url = request.args.get('profileUrl', '')
+        
+        if not profile_url:
+            return jsonify({"error": "profileUrl parameter is required"}), 400
+        
+        # Use profile scraper to get details
+        profile_details = profile_scraper.get_profile_details(profile_url)
+        
+        return jsonify(profile_details)
+        
+    except Exception as e:
+        logger.error(f"Error getting profile details: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+@app.route('/api/people', methods=['POST'])
+def add_person():
+    """Add a new person to the system"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        if 'name' not in data:
+            return jsonify({"error": "Name is required"}), 400
+        
+        # Create a new ID for the person
+        person_id = f"p{len(user_repo.get_all_users()) + 1}"
+        
+        # Create a new person object
+        new_person = {
+            "id": person_id,
+            "name": data.get('name'),
+            "company": data.get('company', ''),
+            "role": data.get('role', ''),
+            "email": data.get('email', ''),
+            "phone": data.get('phone', ''),
+            "profileImage": data.get('profileImage', ''),
+            "bio": data.get('bio', ''),
+            "location": data.get('location', ''),
+            "website": data.get('website', ''),
+            "socialLinks": data.get('socialLinks', {}),
+            "relationshipStatus": data.get('relationshipStatus', 'New'),
+            "reputationScore": data.get('reputationScore', 50),
+            "lastContactedDate": data.get('lastContactedDate', ''),
+            "tasks": [],
+            "meetings": [],
+            "timeline": [
+                {
+                    "id": f"tl_{person_id}_1",
+                    "date": data.get('lastContactedDate', ''),
+                    "type": "contact",
+                    "title": "Added as contact",
+                    "description": f"{data.get('name')} was added to your contacts"
+                }
+            ],
+            "notes": []
+        }
+        
+        # Add the person to the repository
+        user_repo._save_users()
+        
+        return jsonify(new_person)
+        
+    except Exception as e:
+        logger.error(f"Error adding person: {str(e)}", exc_info=True)
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
 def process_meeting_summary(command, person):
