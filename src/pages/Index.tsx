@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import MainLayout from '../layouts/MainLayout';
 import LandingHero from '../components/LandingHero';
@@ -13,7 +14,7 @@ import { generateRelationshipInsight } from '../utils/aiService';
 import { checkBackendAvailability } from '../utils/apiService';
 import { searchProfiles, fetchProfileDetails, addPerson } from '../utils/profileService';
 import { AddContactDialog } from '../components/AddContactDialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Globe } from 'lucide-react';
 
 interface AIInsight {
   message: string;
@@ -40,7 +41,7 @@ const Index = () => {
       if (available) {
         toast({
           title: "AI Backend Connected",
-          description: "Using real AI models for enhanced features",
+          description: "Using real AI models and web scraper for enhanced features",
           duration: 3000,
         });
       }
@@ -54,6 +55,9 @@ const Index = () => {
   }, []);
   
   const handleSearch = async (query: string) => {
+    if (!query.trim()) return;
+    
+    // First check if person exists in local database
     const localPerson = findPersonByName(query);
     
     if (localPerson) {
@@ -76,69 +80,76 @@ const Index = () => {
         });
       }, 1000);
       
-    } else {
-      setIsSearching(true);
+      return;
+    }
+    
+    // If not found locally, search online
+    setIsSearching(true);
+    
+    toast({
+      title: "Searching online...",
+      description: `Looking for "${query}" profiles online`,
+      duration: 5000,
+    });
+    
+    try {
+      console.log("Searching for profiles online:", query);
+      const searchResults = await searchProfiles(query);
       
-      toast({
-        title: "Searching online...",
-        description: `Looking for "${query}" profiles online`,
-        duration: 3000,
-      });
-      
-      try {
-        console.log("Searching for profiles online:", query);
-        const searchResults = await searchProfiles(query);
+      if (searchResults && searchResults.length > 0) {
+        console.log("Found profiles online:", searchResults);
         
-        if (searchResults && searchResults.length > 0) {
-          console.log("Found profiles online:", searchResults);
+        // Get the most relevant result
+        const bestMatch = searchResults[0];
+        
+        console.log("Getting details for profile:", bestMatch.profileUrl);
+        const profileDetails = await fetchProfileDetails(bestMatch.profileUrl);
+        
+        if (profileDetails) {
+          console.log("Got profile details:", profileDetails);
           
-          const profileDetails = await fetchProfileDetails(searchResults[0].profileUrl);
+          // Add the person to our system
+          const addedPerson = await addPerson(profileDetails);
           
-          if (profileDetails) {
-            console.log("Got profile details:", profileDetails);
+          if (addedPerson) {
+            setSearchedPerson(addedPerson);
+            setLastCommand(null);
+            setAIResponse(null);
             
-            const addedPerson = await addPerson(profileDetails);
+            toast({
+              title: "Online profile found",
+              description: `Found and added ${addedPerson.name} to your contacts`,
+              duration: 3000,
+            });
             
-            if (addedPerson) {
-              setSearchedPerson(addedPerson);
-              setLastCommand(null);
-              setAIResponse(null);
-              
-              toast({
-                title: "Online profile found",
-                description: `Found and added ${addedPerson.name} to your contacts`,
-                duration: 3000,
+            setTimeout(() => {
+              const insight = generateRelationshipInsight(addedPerson);
+              setAIResponse({
+                message: insight,
+                sentiment: 'positive',
+                confidenceScore: Math.floor(Math.random() * 15) + 80 // 80-95% confidence
               });
-              
-              setTimeout(() => {
-                const insight = generateRelationshipInsight(addedPerson);
-                setAIResponse({
-                  message: insight,
-                  sentiment: 'positive',
-                  confidenceScore: Math.floor(Math.random() * 15) + 80 // 80-95% confidence
-                });
-              }, 1000);
-            }
+            }, 1000);
           }
-        } else {
-          toast({
-            title: "Person not found",
-            description: "We couldn't find anyone with that name online",
-            variant: "destructive",
-            duration: 3000,
-          });
         }
-      } catch (error) {
-        console.error("Error searching online:", error);
+      } else {
         toast({
-          title: "Search error",
-          description: "There was an error searching for profiles online",
+          title: "Person not found",
+          description: "We couldn't find anyone with that name online",
           variant: "destructive",
           duration: 3000,
         });
-      } finally {
-        setIsSearching(false);
       }
+    } catch (error) {
+      console.error("Error searching online:", error);
+      toast({
+        title: "Search error",
+        description: "There was an error searching for profiles online",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsSearching(false);
     }
   };
   
@@ -186,9 +197,14 @@ const Index = () => {
                 Search for a contact to view their online presence, manage your relationship, 
                 and get AI-powered insights about your interactions.
               </p>
-              {isBackendAvailable && (
-                <div className="mt-2 text-sm text-primary font-medium">
-                  AI Backend Connected: Using real ML models for enhanced features
+              {isBackendAvailable ? (
+                <div className="mt-2 text-sm text-primary font-medium flex items-center justify-center gap-1.5">
+                  <Globe className="h-4 w-4" />
+                  AI Backend Connected: Using real web scraping to find people online
+                </div>
+              ) : (
+                <div className="mt-2 text-sm text-amber-600 font-medium">
+                  Backend not connected: Using sample data (for real online search, start the backend)
                 </div>
               )}
             </div>
@@ -197,13 +213,13 @@ const Index = () => {
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
                 <p className="text-lg font-medium">Searching online profiles...</p>
-                <p className="text-sm text-muted-foreground mt-2">This may take a moment</p>
+                <p className="text-sm text-muted-foreground mt-2">This may take a moment (10-20 seconds)</p>
               </div>
             ) : (
               <>
                 <SearchBar 
                   onSearch={handleSearch} 
-                  placeholder="Search for anyone, or see suggestions..."
+                  placeholder="Search for anyone by name..."
                 />
                 
                 <div className="mt-8 flex justify-center">
@@ -225,6 +241,22 @@ const Index = () => {
                           {person.name}
                         </button>
                       ))}
+                    </div>
+                    
+                    <div className="mt-6 px-4 py-3 mx-auto max-w-xl bg-muted/40 rounded-lg border border-border/50">
+                      <p className="text-sm font-medium mb-1">Try these searches to discover real people:</p>
+                      <div className="flex flex-wrap justify-center gap-2 mt-2">
+                        {["Elon Musk", "Bill Gates", "Mark Zuckerberg", "Sundar Pichai", "Tim Cook"].map(name => (
+                          <button
+                            key={name}
+                            onClick={() => handleSearch(name)}
+                            className="px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors text-sm flex items-center gap-1"
+                          >
+                            <Globe className="h-3 w-3" />
+                            {name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}

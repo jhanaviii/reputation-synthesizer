@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, User } from 'lucide-react';
+import { Search, X, User, Globe } from 'lucide-react';
 import { getAllPeople, Person } from '../utils/mockData';
 import { useNavigate } from 'react-router-dom';
 
@@ -140,9 +140,10 @@ export const SearchBar = ({
           
           <button
             type="submit"
-            className="flex-shrink-0 h-full px-5 py-3 bg-primary text-primary-foreground text-sm font-medium transition-colors hover:bg-primary/90"
+            className="flex items-center gap-1.5 flex-shrink-0 h-full px-5 py-3 bg-primary text-primary-foreground text-sm font-medium transition-colors hover:bg-primary/90"
           >
-            Search
+            <Globe size={14} className="text-primary-foreground" />
+            <span>Search</span>
           </button>
         </div>
         
@@ -162,7 +163,12 @@ export const SearchBar = ({
           <div className="p-2 text-xs text-muted-foreground font-medium">
             {query.trim() === '' ? 'Suggested Users' : 'Search Results'} ({suggestions.length} results)
             <div className="text-xs opacity-60 mt-1">
-              Type to search local contacts, or press "Search" to search online
+              <span className="flex items-center gap-1.5">
+                <User size={12} className="opacity-70" />
+                Type to search locally
+                <Globe size={12} className="opacity-70 ml-1" />
+                Press "Search" for online results
+              </span>
             </div>
           </div>
           

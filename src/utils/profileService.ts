@@ -19,6 +19,8 @@ interface ProfileSearchResult {
     linkedin?: string;
     twitter?: string;
     github?: string;
+    facebook?: string;
+    instagram?: string;
   };
 }
 
@@ -33,13 +35,30 @@ export const searchProfiles = async (query: string): Promise<ProfileSearchResult
       console.log('Backend API available, searching profiles...');
       const response = await axios.get(`${API_URL}/profiles/search`, {
         params: { query },
-        timeout: 20000 // Increase timeout to 20 seconds for web scraping operations
+        timeout: 30000 // Increase timeout to 30 seconds for web scraping operations
       });
       
       console.log('Search results:', response.data);
-      return response.data;
+      
+      if (response.data && response.data.length > 0) {
+        return response.data;
+      } else {
+        toast({
+          title: "No results found",
+          description: `No online profiles found for "${query}"`,
+          variant: "destructive",
+          duration: 3000,
+        });
+        return [];
+      }
     } else {
       console.log('Backend API is not available, using fallback data');
+      toast({
+        title: "Backend unavailable",
+        description: "Using sample data instead of real online search",
+        variant: "destructive",
+        duration: 3000,
+      });
       // Return mock data as fallback
       return generateMockProfileResults(query);
     }
@@ -68,13 +87,42 @@ export const fetchProfileDetails = async (profileUrl: string): Promise<Partial<P
       console.log('Backend API available, fetching profile details...');
       const response = await axios.get(`${API_URL}/profiles/details`, {
         params: { profileUrl },
-        timeout: 20000 // Increase timeout to 20 seconds for web scraping operations
+        timeout: 30000 // Increase timeout to 30 seconds for web scraping operations
       });
       
       console.log('Profile details:', response.data);
-      return response.data;
+      
+      if (response.data) {
+        return {
+          ...response.data,
+          // Ensure the returned data conforms to Person type
+          relationshipStatus: response.data.relationshipStatus as 'New' | 'Active' | 'Inactive' | 'Close',
+          notes: [],
+          tasks: [],
+          meetings: [],
+          timeline: [
+            {
+              id: `tl_${Date.now()}`,
+              date: new Date().toISOString().split('T')[0],
+              type: 'contact',
+              title: 'Added as contact',
+              description: `${response.data.name} was added to your contacts`
+            }
+          ],
+          socialMedia: [],
+          finances: []
+        };
+      } else {
+        throw new Error("No profile details returned");
+      }
     } else {
       console.log('Backend API is not available, using fallback data');
+      toast({
+        title: "Backend unavailable",
+        description: "Using sample data instead of real profile details",
+        variant: "destructive",
+        duration: 3000,
+      });
       // Return mock data as fallback
       return generateMockProfileDetails(profileUrl);
     }
@@ -216,7 +264,7 @@ const createMockPerson = (personData: Partial<Person>): Person => {
     location: personData.location || 'Unknown Location',
     website: personData.website || '',
     socialLinks: personData.socialLinks || {},
-    relationshipStatus: personData.relationshipStatus || 'New',
+    relationshipStatus: personData.relationshipStatus as 'New' | 'Active' | 'Inactive' | 'Close' || 'New',
     reputationScore: personData.reputationScore || Math.floor(Math.random() * 50) + 50,
     lastContactedDate: new Date().toISOString().split('T')[0],
     tasks: [],
@@ -231,7 +279,7 @@ const createMockPerson = (personData: Partial<Person>): Person => {
       }
     ],
     notes: [],
-    socialMedia: [], // Add empty array for socialMedia
-    finances: [], // Add empty array for finances
+    socialMedia: [],
+    finances: [],
   };
 };

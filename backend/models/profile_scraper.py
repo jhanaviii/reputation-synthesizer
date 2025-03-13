@@ -11,10 +11,10 @@ import re
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,14 +29,14 @@ class ProfileScraper:
     def __init__(self):
         """Initialize the profile scraper with necessary configurations"""
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept-Language': 'en-US,en;q=0.9',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120"',
+            'sec-ch-ua-platform': '"macOS"',
         }
         self.session = requests.Session()
         self.session.headers.update(self.headers)
-        
-        # Load backup sample data if available
-        self.sample_data = self._load_sample_data()
         
         # Initialize Selenium for pages that need JavaScript
         try:
@@ -54,20 +54,23 @@ class ProfileScraper:
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--disable-dev-shm-usage")
             chrome_options.add_argument(f"user-agent={self.headers['User-Agent']}")
+            chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+            chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            chrome_options.add_experimental_option("useAutomationExtension", False)
             
             self.driver = webdriver.Chrome(
                 service=Service(ChromeDriverManager().install()),
                 options=chrome_options
             )
+            # Execute CDP Command to mask automation
+            self.driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": self.headers['User-Agent']})
+            self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            
             self.selenium_initialized = True
             logger.info("Selenium WebDriver initialized successfully")
         except Exception as e:
             logger.error(f"Error setting up Selenium: {e}")
             self.selenium_initialized = False
-    
-    def _load_sample_data(self) -> List[Dict[str, Any]]:
-        """Load sample profile data if available"""
-        # ... keep existing code (sample data loading function)
     
     def search_profiles(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
         """
@@ -83,35 +86,180 @@ class ProfileScraper:
         logger.info(f"Searching profiles for: {query}")
         
         try:
-            # Try multiple search methods in order
+            # Try multiple search methods in order of reliability
             results = []
             
-            # Method 1: LinkedIn search via Google
-            if not results:
-                results = self._search_google_linkedin(query, limit)
-                
-            # Method 2: Twitter search
-            if not results:
-                results = self._search_twitter(query, limit)
-                
-            # Method 3: GitHub search
-            if not results:
-                results = self._search_github(query, limit)
-            
-            # Method 4: Generic search
-            if not results:
-                results = self._search_generic(query, limit)
-            
+            # Method 1: Google People search (most reliable for real people)
+            results = self._search_google_people(query, limit)
             if results:
+                logger.info(f"Found {len(results)} results from Google People search")
                 return results[:limit]
-            else:
-                logger.info("All search methods failed, using fallback data")
+                
+            # Method 2: LinkedIn search via Google
+            results = self._search_google_linkedin(query, limit)
+            if results:
+                logger.info(f"Found {len(results)} results from Google LinkedIn search")
+                return results[:limit]
+                
+            # Method 3: Direct LinkedIn search
+            if self.selenium_initialized:
+                results = self._search_linkedin_direct(query, limit)
+                if results:
+                    logger.info(f"Found {len(results)} results from direct LinkedIn search")
+                    return results[:limit]
+            
+            # Method 4: General web search for people
+            results = self._search_generic(query, limit)
+            if results:
+                logger.info(f"Found {len(results)} results from generic search")
+                return results[:limit]
+            
+            logger.warning(f"No results found for query: {query}")
+            return []
+            
         except Exception as e:
             logger.error(f"Error searching profiles: {e}")
-            logger.info("Using fallback sample data")
-        
-        # Generate some sample data using the query
-        return self._generate_sample_results(query, limit)
+            return []
+    
+    def _search_google_people(self, query: str, limit: int) -> List[Dict[str, Any]]:
+        """Search for people using Google's Knowledge Graph"""
+        try:
+            # This search specifically targets Google's knowledge panel for people
+            search_term = f"{query} person"
+            url = f"https://www.google.com/search?q={search_term}&hl=en"
+            
+            if self.selenium_initialized:
+                self.driver.get(url)
+                time.sleep(2)  # Wait for page to load
+                html = self.driver.page_source
+            else:
+                response = self.session.get(url, timeout=15)
+                if response.status_code != 200:
+                    logger.warning(f"Google people search failed with status: {response.status_code}")
+                    return []
+                html = response.text
+            
+            soup = BeautifulSoup(html, 'html.parser')
+            results = []
+            
+            # Look for knowledge panel
+            knowledge_panel = soup.select('.kp-header')
+            if knowledge_panel:
+                logger.info("Found knowledge panel for person")
+                
+                # Extract name
+                name_element = soup.select_one('.qrShPb')
+                name = name_element.text.strip() if name_element else None
+                
+                if not name:
+                    name_element = soup.select_one('h2.qrShPb')
+                    name = name_element.text.strip() if name_element else None
+                
+                # Extract image
+                img_element = soup.select_one('.kp-header img')
+                profile_image = img_element.get('src') if img_element else None
+                
+                # Extract description/role
+                desc_element = soup.select_one('.wwUB2c')
+                role = desc_element.text.strip() if desc_element else None
+                
+                # Extract additional info
+                info_elements = soup.select('.Z1hOCe')
+                company = None
+                location = None
+                
+                for element in info_elements:
+                    text = element.text.strip()
+                    if 'Born:' in text or 'Age:' in text:
+                        continue  # Skip personal info
+                    if not company and ('at' in text.lower() or 'with' in text.lower()):
+                        company = text.split('at')[-1].strip() if 'at' in text.lower() else text.split('with')[-1].strip()
+                    if not location and any(loc in text.lower() for loc in ['lives in', 'based in', 'located in']):
+                        location = text.split('in')[-1].strip()
+                
+                # Get social links
+                social_links = {}
+                social_elements = soup.select('.YhemCb a')
+                for element in social_elements:
+                    href = element.get('href', '')
+                    if 'linkedin.com' in href:
+                        social_links['linkedin'] = href
+                    elif 'twitter.com' in href or 'x.com' in href:
+                        social_links['twitter'] = href
+                    elif 'facebook.com' in href:
+                        social_links['facebook'] = href
+                    elif 'instagram.com' in href:
+                        social_links['instagram'] = href
+                
+                if name:
+                    bio = f"{name} is a {role if role else 'professional'}"
+                    if company:
+                        bio += f" at {company}"
+                    if location:
+                        bio += f", based in {location}"
+                    
+                    results.append({
+                        "name": name,
+                        "company": company or "Unknown",
+                        "role": role or "Professional",
+                        "profileUrl": social_links.get('linkedin', f"https://www.google.com/search?q={name.replace(' ', '+')}"),
+                        "profileImage": profile_image or f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=random",
+                        "location": location or "Unknown Location",
+                        "bio": bio,
+                        "socialLinks": social_links
+                    })
+            
+            # If no knowledge panel, look for people profiles in search results
+            if not results:
+                logger.info("No knowledge panel found, checking search results")
+                people_cards = soup.select('.d0fCJc')
+                for card in people_cards[:limit]:
+                    try:
+                        name_element = card.select_one('h3')
+                        if not name_element:
+                            continue
+                            
+                        name = name_element.text.strip()
+                        
+                        # Extract description if available
+                        desc_element = card.select_one('.HiHjCd')
+                        description = desc_element.text.strip() if desc_element else ""
+                        
+                        # Extract image
+                        img_element = card.select_one('img')
+                        profile_image = img_element.get('src') if img_element else None
+                        
+                        # Parse role and company from description
+                        role = "Professional"
+                        company = "Unknown"
+                        
+                        if "at" in description:
+                            parts = description.split("at")
+                            if len(parts) >= 2:
+                                role = parts[0].strip()
+                                company = parts[1].strip()
+                        
+                        # Extract any URLs
+                        link_element = card.select_one('a')
+                        profile_url = link_element.get('href') if link_element else f"https://www.google.com/search?q={name.replace(' ', '+')}"
+                        
+                        results.append({
+                            "name": name,
+                            "company": company,
+                            "role": role,
+                            "profileUrl": profile_url,
+                            "profileImage": profile_image or f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=random",
+                            "bio": description or f"{name} is a {role} at {company}",
+                            "location": self._extract_location(description) or "Unknown Location"
+                        })
+                    except Exception as e:
+                        logger.error(f"Error parsing people card: {e}")
+                        continue
+            
+            return results
+        except Exception as e:
+            logger.error(f"Error in Google people search: {e}")
+            return []
     
     def _search_google_linkedin(self, query: str, limit: int) -> List[Dict[str, Any]]:
         """Search for LinkedIn profiles using Google"""
@@ -120,7 +268,7 @@ class ProfileScraper:
             search_term = f"{query} site:linkedin.com/in/"
             url = f"https://www.google.com/search?q={search_term}"
             
-            response = self.session.get(url, timeout=10)
+            response = self.session.get(url, timeout=15)
             if response.status_code != 200:
                 logger.warning(f"Google search failed with status: {response.status_code}")
                 return []
@@ -185,7 +333,8 @@ class ProfileScraper:
                         "role": role or "Unknown",
                         "profileUrl": linkedin_url,
                         "profileImage": f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=random",
-                        "location": self._extract_location(description)
+                        "location": self._extract_location(description) or "Unknown Location",
+                        "bio": description or f"{name} is a {role or 'professional'} at {company or 'a company'}."
                     })
                 except Exception as e:
                     logger.error(f"Error parsing Google search result: {e}")
@@ -196,130 +345,66 @@ class ProfileScraper:
             logger.error(f"Error in Google LinkedIn search: {e}")
             return []
     
-    def _search_twitter(self, query: str, limit: int) -> List[Dict[str, Any]]:
-        """Search for profiles on Twitter"""
+    def _search_linkedin_direct(self, query: str, limit: int) -> List[Dict[str, Any]]:
+        """Directly search LinkedIn using Selenium"""
         try:
             if not self.selenium_initialized:
-                logger.warning("Selenium not initialized, skipping Twitter search")
                 return []
             
-            # Search Twitter using Selenium (for JS-rendered content)
-            self.driver.get(f"https://twitter.com/search?q={query}&src=typed_query&f=user")
-            
-            # Wait for user results to load
-            time.sleep(3)
+            # Use LinkedIn's public search
+            self.driver.get(f"https://www.linkedin.com/pub/dir?firstName={query.split()[0] if ' ' in query else query}&lastName={query.split()[1] if ' ' in query else ''}&trk=people-guest_people-search-bar_search-submit")
+            time.sleep(3)  # Wait for page to load
             
             results = []
-            user_elements = self.driver.find_elements(By.CSS_SELECTOR, 'div[data-testid="cellInnerDiv"]')
+            profiles = self.driver.find_elements(By.CSS_SELECTOR, '.result-card')
             
-            for element in user_elements[:limit]:
+            for profile in profiles[:limit]:
                 try:
-                    # Extract username and display name
-                    name_element = element.find_element(By.CSS_SELECTOR, 'div[data-testid="User-Name"]')
-                    name = name_element.text.split('\n')[0].strip()
+                    # Extract name
+                    name_element = profile.find_element(By.CSS_SELECTOR, '.name')
+                    name = name_element.text.strip()
                     
-                    # Extract bio if available
-                    bio_element = element.find_elements(By.CSS_SELECTOR, 'div[data-testid="UserDescription"]')
-                    bio = bio_element[0].text if bio_element else ""
+                    # Extract profile link
+                    link_element = profile.find_element(By.CSS_SELECTOR, 'a.result-card__link')
+                    profile_url = link_element.get_attribute('href')
                     
-                    # Extract profile image
-                    img_element = element.find_elements(By.TAG_NAME, 'img')
-                    profile_image = img_element[0].get_attribute('src') if img_element else ""
+                    # Extract headline
+                    headline_element = profile.find_elements(By.CSS_SELECTOR, '.subline-level-1')
+                    headline = headline_element[0].text.strip() if headline_element else ""
                     
-                    # Extract username
-                    username = ""
-                    if name_element:
-                        username_text = name_element.text.split('\n')
-                        if len(username_text) > 1:
-                            username = username_text[1].strip()
+                    # Extract location
+                    location_element = profile.find_elements(By.CSS_SELECTOR, '.subline-level-2')
+                    location = location_element[0].text.strip() if location_element else "Unknown Location"
                     
-                    # Extract company and role from bio
+                    # Extract role and company from headline
+                    role = "Professional"
                     company = "Unknown"
-                    role = "Unknown"
-                    if "at" in bio.lower():
-                        role_company = re.search(r'([^|]+) at ([^|]+)', bio, re.IGNORECASE)
-                        if role_company:
-                            role = role_company.group(1).strip()
-                            company = role_company.group(2).strip()
+                    
+                    if " at " in headline:
+                        parts = headline.split(" at ")
+                        role = parts[0].strip()
+                        company = parts[1].strip()
+                    
+                    # Extract image if available
+                    img_element = profile.find_elements(By.TAG_NAME, 'img')
+                    profile_image = img_element[0].get_attribute('src') if img_element else None
                     
                     results.append({
                         "name": name,
                         "company": company,
                         "role": role,
-                        "profileUrl": f"https://twitter.com/{username}",
+                        "profileUrl": profile_url,
                         "profileImage": profile_image or f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=random",
-                        "bio": bio
+                        "location": location,
+                        "bio": f"{name} is a {role} at {company}, based in {location}."
                     })
                 except Exception as e:
-                    logger.error(f"Error parsing Twitter result: {e}")
+                    logger.error(f"Error parsing LinkedIn result: {e}")
                     continue
             
             return results
         except Exception as e:
-            logger.error(f"Error in Twitter search: {e}")
-            return []
-    
-    def _search_github(self, query: str, limit: int) -> List[Dict[str, Any]]:
-        """Search for profiles on GitHub"""
-        try:
-            url = f"https://github.com/search?q={query}&type=users"
-            
-            response = self.session.get(url, timeout=10)
-            if response.status_code != 200:
-                logger.warning(f"GitHub search failed with status: {response.status_code}")
-                return []
-            
-            soup = BeautifulSoup(response.text, 'html.parser')
-            results = []
-            
-            # Extract user results
-            user_elements = soup.select('div.user-list-item')
-            
-            for element in user_elements[:limit]:
-                try:
-                    # Extract username and display name
-                    username_element = element.select_one('a.mr-1')
-                    name_element = element.select_one('div.f4.text-normal')
-                    
-                    if not username_element:
-                        continue
-                    
-                    username = username_element.text.strip()
-                    name = name_element.text.strip() if name_element else username
-                    
-                    # Extract bio
-                    bio_element = element.select_one('p.color-fg-muted')
-                    bio = bio_element.text.strip() if bio_element else ""
-                    
-                    # Extract profile image
-                    img_element = element.select_one('img.avatar')
-                    profile_image = img_element.get('src') if img_element else ""
-                    
-                    # Extract company and role from bio
-                    company = "Unknown"
-                    role = "Software Developer"  # Default for GitHub
-                    
-                    if "at" in bio.lower():
-                        role_company = re.search(r'([^|]+) at ([^|]+)', bio, re.IGNORECASE)
-                        if role_company:
-                            role = role_company.group(1).strip()
-                            company = role_company.group(2).strip()
-                    
-                    results.append({
-                        "name": name,
-                        "company": company,
-                        "role": role,
-                        "profileUrl": f"https://github.com/{username}",
-                        "profileImage": profile_image or f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=random",
-                        "bio": bio
-                    })
-                except Exception as e:
-                    logger.error(f"Error parsing GitHub result: {e}")
-                    continue
-            
-            return results
-        except Exception as e:
-            logger.error(f"Error in GitHub search: {e}")
+            logger.error(f"Error in direct LinkedIn search: {e}")
             return []
     
     def _search_generic(self, query: str, limit: int) -> List[Dict[str, Any]]:
@@ -327,7 +412,7 @@ class ProfileScraper:
         try:
             url = f"https://www.bing.com/search?q={query}+professional+profile"
             
-            response = self.session.get(url, timeout=10)
+            response = self.session.get(url, timeout=15)
             if response.status_code != 200:
                 logger.warning(f"Generic search failed with status: {response.status_code}")
                 return []
@@ -391,6 +476,8 @@ class ProfileScraper:
                         "role": role,
                         "profileUrl": link,
                         "profileImage": f"https://ui-avatars.com/api/?name={name.replace(' ', '+')}&background=random",
+                        "bio": snippet,
+                        "location": self._extract_location(snippet) or "Unknown Location"
                     })
                 except Exception as e:
                     logger.error(f"Error parsing generic search result: {e}")
@@ -416,10 +503,6 @@ class ProfileScraper:
                 return match.group(1)
         
         return "Unknown Location"
-    
-    def _generate_sample_results(self, query: str, limit: int) -> List[Dict[str, Any]]:
-        """Generate sample results based on the query"""
-        # ... keep existing code (sample data generation function)
     
     def get_profile_details(self, profile_url: str) -> Dict[str, Any]:
         """
@@ -535,11 +618,15 @@ class ProfileScraper:
                 person_data["bio"] = f"{name} is a professional in the {person_data['role']} field."
             
             # Generate other details
+            email_domain = person_data['company'].lower().replace(' ', '')
+            if email_domain == "unknown":
+                email_domain = "company.com"
+                
             result = {
                 "name": person_data["name"],
                 "company": person_data["company"],
                 "role": person_data["role"],
-                "email": f"{person_data['name'].lower().replace(' ', '.')}@{person_data['company'].lower().replace(' ', '')}.com",
+                "email": f"{person_data['name'].lower().replace(' ', '.')}@{email_domain}",
                 "phone": f"+1{random.randint(1000000000, 9999999999)}",
                 "profileImage": person_data["profileImage"],
                 "bio": person_data["bio"],
@@ -581,7 +668,7 @@ class ProfileScraper:
                 "twitter": f"https://twitter.com/{name.lower().replace(' ', '')}" if random.random() > 0.5 else None,
                 "github": f"https://github.com/{name.lower().replace(' ', '')}" if random.random() > 0.7 else None,
             },
-            "relationshipStatus": random.choice(['New', 'Active', 'Inactive', 'Close']),
+            "relationshipStatus": "New",
             "reputationScore": self._calculate_reputation_score(60, 20)
         }
     

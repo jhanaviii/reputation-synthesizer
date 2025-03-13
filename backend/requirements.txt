@@ -16,3 +16,5 @@ requests==2.31.0
 selenium==4.16.0
 webdriver-manager==4.0.1
 lxml==4.9.3
+pyppeteer==1.0.2
+fake-useragent==1.2.1
