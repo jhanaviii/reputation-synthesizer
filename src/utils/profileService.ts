@@ -13,6 +13,8 @@ interface ProfileSearchResult {
   company?: string;
   role?: string;
   profileImage?: string;
+  location?: string;
+  bio?: string;
   socialLinks?: {
     linkedin?: string;
     twitter?: string;
@@ -28,10 +30,12 @@ export const searchProfiles = async (query: string): Promise<ProfileSearchResult
     const isBackendAvailable = await checkBackendAvailability();
     
     if (isBackendAvailable) {
+      console.log('Backend API available, searching profiles...');
       const response = await axios.get(`${API_URL}/profiles/search`, {
         params: { query }
       });
       
+      console.log('Search results:', response.data);
       return response.data;
     } else {
       console.log('Backend API is not available, using fallback data');
@@ -60,10 +64,12 @@ export const fetchProfileDetails = async (profileUrl: string): Promise<Partial<P
     const isBackendAvailable = await checkBackendAvailability();
     
     if (isBackendAvailable) {
+      console.log('Backend API available, fetching profile details...');
       const response = await axios.get(`${API_URL}/profiles/details`, {
         params: { profileUrl }
       });
       
+      console.log('Profile details:', response.data);
       return response.data;
     } else {
       console.log('Backend API is not available, using fallback data');
@@ -92,6 +98,7 @@ export const addPerson = async (personData: Partial<Person>): Promise<Person | n
     const isBackendAvailable = await checkBackendAvailability();
     
     if (isBackendAvailable) {
+      console.log('Backend API available, adding person...');
       const response = await axios.post(`${API_URL}/people`, personData);
       
       toast({
@@ -131,6 +138,7 @@ export const addPerson = async (personData: Partial<Person>): Promise<Person | n
 const generateMockProfileResults = (query: string): ProfileSearchResult[] => {
   const companies = ['TechCorp', 'InnovateSoft', 'DataSystems', 'CloudNine', 'FutureTech'];
   const roles = ['Software Engineer', 'Product Manager', 'UX Designer', 'Marketing Specialist', 'Data Scientist'];
+  const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Seattle, WA', 'Boston, MA'];
   
   // Generate 3-5 mock profiles
   const count = Math.floor(Math.random() * 3) + 3;
@@ -139,13 +147,16 @@ const generateMockProfileResults = (query: string): ProfileSearchResult[] => {
     const name = `${query} ${String.fromCharCode(65 + i)}`;
     const company = companies[Math.floor(Math.random() * companies.length)];
     const role = roles[Math.floor(Math.random() * roles.length)];
+    const location = locations[Math.floor(Math.random() * locations.length)];
     
     return {
       name,
       profileUrl: `https://linkedin.com/in/${name.toLowerCase().replace(/\s/g, '-')}`,
       company,
       role,
-      profileImage: `https://i.pravatar.cc/150?u=${name.replace(/\s/g, '')}`,
+      location,
+      profileImage: `https://ui-avatars.com/api/?name=${name.replace(/\s/g, '+')}&background=random`,
+      bio: `${name} is a ${role} at ${company} based in ${location}.`,
       socialLinks: {
         linkedin: `https://linkedin.com/in/${name.toLowerCase().replace(/\s/g, '-')}`,
         twitter: Math.random() > 0.5 ? `https://twitter.com/${name.toLowerCase().replace(/\s/g, '')}` : undefined,
@@ -160,18 +171,21 @@ const generateMockProfileDetails = (profileUrl: string): Partial<Person> => {
   const name = profileUrl.split('/').pop()?.replace(/-/g, ' ') || 'Unknown Person';
   const companies = ['TechCorp', 'InnovateSoft', 'DataSystems', 'CloudNine', 'FutureTech'];
   const roles = ['Software Engineer', 'Product Manager', 'UX Designer', 'Marketing Specialist', 'Data Scientist'];
+  const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Seattle, WA', 'Boston, MA'];
+  
   const company = companies[Math.floor(Math.random() * companies.length)];
   const role = roles[Math.floor(Math.random() * roles.length)];
+  const location = locations[Math.floor(Math.random() * locations.length)];
   
   return {
     name,
     company,
     role,
     email: `${name.toLowerCase().replace(/\s/g, '.')}@${company.toLowerCase().replace(/\s/g, '')}.com`,
-    phone: `+1${Math.floor(Math.random() * 1000000000)}`,
-    profileImage: `https://i.pravatar.cc/150?u=${name.replace(/\s/g, '')}`,
-    bio: `${name} is a ${role} at ${company} with expertise in various aspects of technology and innovation.`,
-    location: ['New York', 'San Francisco', 'London', 'Berlin', 'Tokyo'][Math.floor(Math.random() * 5)],
+    phone: `+1${Math.floor(Math.random() * 10000000000)}`,
+    profileImage: `https://ui-avatars.com/api/?name=${name.replace(/\s/g, '+')}&background=random`,
+    bio: `${name} is a ${role} at ${company} with expertise in various aspects of technology and innovation. Based in ${location}.`,
+    location,
     website: `https://${name.toLowerCase().replace(/\s/g, '')}.com`,
     socialLinks: {
       linkedin: profileUrl,
@@ -195,7 +209,7 @@ const createMockPerson = (personData: Partial<Person>): Person => {
     role: personData.role || 'Unknown Role',
     email: personData.email || `${name.toLowerCase().replace(/\s/g, '.')}@example.com`,
     phone: personData.phone || '+1234567890',
-    profileImage: personData.profileImage || `https://i.pravatar.cc/150?u=${id}`,
+    profileImage: personData.profileImage || `https://ui-avatars.com/api/?name=${name.replace(/\s/g, '+')}&background=random`,
     bio: personData.bio || `${name} is a professional with various skills and expertise.`,
     location: personData.location || 'Unknown Location',
     website: personData.website || '',

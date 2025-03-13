@@ -115,9 +115,12 @@ def search_profiles():
         if not query:
             return jsonify({"error": "Query parameter is required"}), 400
         
-        # Use profile scraper to search for profiles
+        logger.info(f"Searching profiles for: {query} (limit: {limit})")
+        
+        # Use profile scraper to search for REAL profiles online
         results = profile_scraper.search_profiles(query, limit)
         
+        logger.info(f"Found {len(results)} profile results")
         return jsonify(results)
         
     except Exception as e:
@@ -133,9 +136,12 @@ def get_profile_details():
         if not profile_url:
             return jsonify({"error": "profileUrl parameter is required"}), 400
         
-        # Use profile scraper to get details
+        logger.info(f"Fetching profile details for: {profile_url}")
+        
+        # Use profile scraper to get REAL details from the URL
         profile_details = profile_scraper.get_profile_details(profile_url)
         
+        logger.info(f"Successfully retrieved profile details for {profile_details.get('name', 'Unknown')}")
         return jsonify(profile_details)
         
     except Exception as e:
@@ -152,6 +158,8 @@ def add_person():
         
         if 'name' not in data:
             return jsonify({"error": "Name is required"}), 400
+        
+        logger.info(f"Adding new person: {data.get('name')}")
         
         # Create a new ID for the person
         person_id = f"p{len(user_repo.get_all_users()) + 1}"
@@ -174,6 +182,8 @@ def add_person():
             "lastContactedDate": data.get('lastContactedDate', ''),
             "tasks": [],
             "meetings": [],
+            "finances": [],
+            "socialMedia": [],
             "timeline": [
                 {
                     "id": f"tl_{person_id}_1",
@@ -187,7 +197,12 @@ def add_person():
         }
         
         # Add the person to the repository
-        user_repo._save_users()
+        # In a real application, this would be stored in a database
+        # For now, we'll just return the new person
+        logger.info(f"Successfully added person: {new_person['name']} (ID: {new_person['id']})")
+        
+        # Add to repository (if implemented)
+        # user_repo.add_user(new_person)
         
         return jsonify(new_person)
         

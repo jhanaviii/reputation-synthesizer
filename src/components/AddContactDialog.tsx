@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
-import { Plus, Search, Loader2 } from 'lucide-react';
+import { Plus, Search, Loader2, MapPin, Building, Briefcase } from 'lucide-react';
 import { searchProfiles, fetchProfileDetails, addPerson } from '@/utils/profileService';
 import { toast } from "@/components/ui/use-toast";
 
@@ -16,6 +16,8 @@ interface ProfileResult {
   company?: string;
   role?: string;
   profileImage?: string;
+  location?: string;
+  bio?: string;
 }
 
 interface AddContactDialogProps {
@@ -46,7 +48,9 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
     setSelectedProfile(null);
 
     try {
+      console.log("Searching for profiles with query:", searchQuery);
       const results = await searchProfiles(searchQuery);
+      console.log("Search results:", results);
       setSearchResults(results);
     } catch (error) {
       console.error('Error searching profiles:', error);
@@ -72,7 +76,9 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
     
     try {
       // Fetch detailed profile information
+      console.log("Fetching details for profile:", selectedProfile.profileUrl);
       const profileDetails = await fetchProfileDetails(selectedProfile.profileUrl);
+      console.log("Profile details:", profileDetails);
       
       // Add the person to the system
       const result = await addPerson(profileDetails);
@@ -129,7 +135,7 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
             </Label>
             <Input
               id="search"
-              placeholder="Search by name or company"
+              placeholder="Search by name, company, or role"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -145,13 +151,14 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
         </div>
         
         {isSearching && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex flex-col justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+            <p className="text-sm text-muted-foreground">Searching online for "{searchQuery}"...</p>
           </div>
         )}
         
         {!isSearching && searchResults.length > 0 && (
-          <div className="mt-4 max-h-60 overflow-y-auto">
+          <div className="mt-4 max-h-[400px] overflow-y-auto">
             <div className="space-y-2">
               {searchResults.map((profile, index) => (
                 <Card 
@@ -161,24 +168,51 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
                   }`}
                   onClick={() => handleSelectProfile(profile)}
                 >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <Avatar className="h-10 w-10 border">
-                      <img 
-                        src={profile.profileImage || 'https://i.pravatar.cc/100'} 
-                        alt={profile.name} 
-                        className="h-full w-full object-cover"
-                      />
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{profile.name}</p>
-                      {profile.role && profile.company && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {profile.role} at {profile.company}
-                        </p>
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12 border">
+                        <img 
+                          src={profile.profileImage || 'https://ui-avatars.com/api/?name=Unknown&background=random'} 
+                          alt={profile.name} 
+                          className="h-full w-full object-cover"
+                        />
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium leading-none mb-1">{profile.name}</p>
+                        {(profile.role || profile.company) && (
+                          <div className="flex items-center text-xs text-muted-foreground gap-2">
+                            {profile.role && (
+                              <div className="flex items-center gap-1">
+                                <Briefcase className="h-3 w-3" />
+                                <span className="truncate">{profile.role}</span>
+                              </div>
+                            )}
+                            {profile.company && (
+                              <div className="flex items-center gap-1">
+                                <Building className="h-3 w-3" />
+                                <span className="truncate">{profile.company}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {profile.location && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                            <MapPin className="h-3 w-3" />
+                            <span className="truncate">{profile.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      {selectedProfile?.profileUrl === profile.profileUrl && (
+                        <div className="h-2 w-2 rounded-full bg-primary" />
                       )}
                     </div>
-                    {selectedProfile?.profileUrl === profile.profileUrl && (
-                      <div className="h-2 w-2 rounded-full bg-primary" />
+                    
+                    {selectedProfile?.profileUrl === profile.profileUrl && profile.bio && (
+                      <div className="mt-2 border-t pt-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {profile.bio}
+                        </p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -189,7 +223,8 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
         
         {!isSearching && searchResults.length === 0 && searchQuery && (
           <div className="text-center py-8 text-muted-foreground">
-            No results found for "{searchQuery}"
+            <p>No results found for "{searchQuery}"</p>
+            <p className="text-xs mt-1">Try searching for a name, company, or role</p>
           </div>
         )}
         
