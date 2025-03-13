@@ -46,6 +46,21 @@ export type Person = {
     title: string;
     description: string;
   }[];
+  // Add missing properties
+  bio?: string;
+  location?: string;
+  website?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+    [key: string]: string | undefined;
+  };
+  notes?: {
+    id: string;
+    content: string;
+    date: string;
+  }[];
 };
 
 // Import expanded dataset (100+ users)

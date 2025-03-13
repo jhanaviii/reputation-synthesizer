@@ -178,7 +178,7 @@ const generateMockProfileDetails = (profileUrl: string): Partial<Person> => {
       twitter: Math.random() > 0.5 ? `https://twitter.com/${name.toLowerCase().replace(/\s/g, '')}` : undefined,
       github: Math.random() > 0.7 ? `https://github.com/${name.toLowerCase().replace(/\s/g, '')}` : undefined,
     },
-    relationshipStatus: ['New', 'Active', 'Inactive', 'Close'][Math.floor(Math.random() * 4)],
+    relationshipStatus: ['New', 'Active', 'Inactive', 'Close'][Math.floor(Math.random() * 4)] as 'New' | 'Active' | 'Inactive' | 'Close',
     reputationScore: Math.floor(Math.random() * 50) + 50,
   };
 };
@@ -215,5 +215,7 @@ const createMockPerson = (personData: Partial<Person>): Person => {
       }
     ],
     notes: [],
+    socialMedia: [], // Add empty array for socialMedia
+    finances: [], // Add empty array for finances
   };
 };
