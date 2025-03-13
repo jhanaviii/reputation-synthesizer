@@ -32,7 +32,8 @@ export const searchProfiles = async (query: string): Promise<ProfileSearchResult
     if (isBackendAvailable) {
       console.log('Backend API available, searching profiles...');
       const response = await axios.get(`${API_URL}/profiles/search`, {
-        params: { query }
+        params: { query },
+        timeout: 20000 // Increase timeout to 20 seconds for web scraping operations
       });
       
       console.log('Search results:', response.data);
@@ -66,7 +67,8 @@ export const fetchProfileDetails = async (profileUrl: string): Promise<Partial<P
     if (isBackendAvailable) {
       console.log('Backend API available, fetching profile details...');
       const response = await axios.get(`${API_URL}/profiles/details`, {
-        params: { profileUrl }
+        params: { profileUrl },
+        timeout: 20000 // Increase timeout to 20 seconds for web scraping operations
       });
       
       console.log('Profile details:', response.data);
@@ -136,9 +138,9 @@ export const addPerson = async (personData: Partial<Person>): Promise<Person | n
 
 // Helper function to generate mock profile search results
 const generateMockProfileResults = (query: string): ProfileSearchResult[] => {
-  const companies = ['TechCorp', 'InnovateSoft', 'DataSystems', 'CloudNine', 'FutureTech'];
-  const roles = ['Software Engineer', 'Product Manager', 'UX Designer', 'Marketing Specialist', 'Data Scientist'];
-  const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Seattle, WA', 'Boston, MA'];
+  const companies = ['TechCorp', 'InnovateSoft', 'DataSystems', 'CloudNine', 'FutureTech', 'AI Solutions', 'Digital Trends', 'Global Insights'];
+  const roles = ['Software Engineer', 'Product Manager', 'UX Designer', 'Marketing Specialist', 'Data Scientist', 'CEO', 'CTO', 'Sales Director'];
+  const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Seattle, WA', 'Boston, MA', 'Chicago, IL', 'Los Angeles, CA', 'Denver, CO'];
   
   // Generate 3-5 mock profiles
   const count = Math.floor(Math.random() * 3) + 3;
@@ -169,9 +171,9 @@ const generateMockProfileResults = (query: string): ProfileSearchResult[] => {
 // Helper function to generate mock profile details
 const generateMockProfileDetails = (profileUrl: string): Partial<Person> => {
   const name = profileUrl.split('/').pop()?.replace(/-/g, ' ') || 'Unknown Person';
-  const companies = ['TechCorp', 'InnovateSoft', 'DataSystems', 'CloudNine', 'FutureTech'];
-  const roles = ['Software Engineer', 'Product Manager', 'UX Designer', 'Marketing Specialist', 'Data Scientist'];
-  const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Seattle, WA', 'Boston, MA'];
+  const companies = ['TechCorp', 'InnovateSoft', 'DataSystems', 'CloudNine', 'FutureTech', 'AI Solutions', 'Digital Trends', 'Global Insights'];
+  const roles = ['Software Engineer', 'Product Manager', 'UX Designer', 'Marketing Specialist', 'Data Scientist', 'CEO', 'CTO', 'Sales Director'];
+  const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Seattle, WA', 'Boston, MA', 'Chicago, IL', 'Los Angeles, CA', 'Denver, CO'];
   
   const company = companies[Math.floor(Math.random() * companies.length)];
   const role = roles[Math.floor(Math.random() * roles.length)];
@@ -192,7 +194,7 @@ const generateMockProfileDetails = (profileUrl: string): Partial<Person> => {
       twitter: Math.random() > 0.5 ? `https://twitter.com/${name.toLowerCase().replace(/\s/g, '')}` : undefined,
       github: Math.random() > 0.7 ? `https://github.com/${name.toLowerCase().replace(/\s/g, '')}` : undefined,
     },
-    relationshipStatus: ['New', 'Active', 'Inactive', 'Close'][Math.floor(Math.random() * 4)] as 'New' | 'Active' | 'Inactive' | 'Close',
+    relationshipStatus: (['New', 'Active', 'Inactive', 'Close'][Math.floor(Math.random() * 4)] as 'New' | 'Active' | 'Inactive' | 'Close'),
     reputationScore: Math.floor(Math.random() * 50) + 50,
   };
 };

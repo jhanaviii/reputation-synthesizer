@@ -23,7 +23,7 @@ export const SearchBar = ({
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   
-  // Load all people as initial suggestions (more than before)
+  // Load all people as initial suggestions
   useEffect(() => {
     const allPeople = getAllPeople();
     setSuggestions(allPeople.slice(0, 5)); // Show top 5 initially instead of just 3
@@ -161,6 +161,9 @@ export const SearchBar = ({
         >
           <div className="p-2 text-xs text-muted-foreground font-medium">
             {query.trim() === '' ? 'Suggested Users' : 'Search Results'} ({suggestions.length} results)
+            <div className="text-xs opacity-60 mt-1">
+              Type to search local contacts, or press "Search" to search online
+            </div>
           </div>
           
           <div className="max-h-[350px] overflow-y-auto">

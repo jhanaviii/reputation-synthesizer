@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import MainLayout from '../layouts/MainLayout';
 import LandingHero from '../components/LandingHero';
@@ -12,6 +11,9 @@ import { findPersonByName, Person, getAllPeople } from '../utils/mockData';
 import { toast } from "@/components/ui/use-toast";
 import { generateRelationshipInsight } from '../utils/aiService';
 import { checkBackendAvailability } from '../utils/apiService';
+import { searchProfiles, fetchProfileDetails, addPerson } from '../utils/profileService';
+import { AddContactDialog } from '../components/AddContactDialog';
+import { Loader2 } from 'lucide-react';
 
 interface AIInsight {
   message: string;
@@ -28,8 +30,8 @@ const Index = () => {
   const [aiResponse, setAIResponse] = useState<AIInsight | null>(null);
   const [isBackendAvailable, setIsBackendAvailable] = useState(false);
   const [allPeople, setAllPeople] = useState<Person[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   
-  // Check backend availability on load
   useEffect(() => {
     const checkBackend = async () => {
       const available = await checkBackendAvailability();
@@ -47,28 +49,26 @@ const Index = () => {
     checkBackend();
   }, []);
   
-  // Load all people on mount
   useEffect(() => {
     setAllPeople(getAllPeople());
   }, []);
   
-  const handleSearch = (query: string) => {
-    const person = findPersonByName(query);
+  const handleSearch = async (query: string) => {
+    const localPerson = findPersonByName(query);
     
-    if (person) {
-      setSearchedPerson(person);
+    if (localPerson) {
+      setSearchedPerson(localPerson);
       setLastCommand(null);
       setAIResponse(null);
       
       toast({
-        title: "Person found",
-        description: `Found information for ${person.name}`,
+        title: "Person found in local database",
+        description: `Found information for ${localPerson.name}`,
         duration: 3000,
       });
       
-      // Generate an initial AI insight about the relationship
       setTimeout(() => {
-        const insight = generateRelationshipInsight(person);
+        const insight = generateRelationshipInsight(localPerson);
         setAIResponse({
           message: insight,
           sentiment: 'positive',
@@ -77,12 +77,68 @@ const Index = () => {
       }, 1000);
       
     } else {
+      setIsSearching(true);
+      
       toast({
-        title: "Person not found",
-        description: "We couldn't find anyone with that name",
-        variant: "destructive",
+        title: "Searching online...",
+        description: `Looking for "${query}" profiles online`,
         duration: 3000,
       });
+      
+      try {
+        console.log("Searching for profiles online:", query);
+        const searchResults = await searchProfiles(query);
+        
+        if (searchResults && searchResults.length > 0) {
+          console.log("Found profiles online:", searchResults);
+          
+          const profileDetails = await fetchProfileDetails(searchResults[0].profileUrl);
+          
+          if (profileDetails) {
+            console.log("Got profile details:", profileDetails);
+            
+            const addedPerson = await addPerson(profileDetails);
+            
+            if (addedPerson) {
+              setSearchedPerson(addedPerson);
+              setLastCommand(null);
+              setAIResponse(null);
+              
+              toast({
+                title: "Online profile found",
+                description: `Found and added ${addedPerson.name} to your contacts`,
+                duration: 3000,
+              });
+              
+              setTimeout(() => {
+                const insight = generateRelationshipInsight(addedPerson);
+                setAIResponse({
+                  message: insight,
+                  sentiment: 'positive',
+                  confidenceScore: Math.floor(Math.random() * 15) + 80 // 80-95% confidence
+                });
+              }, 1000);
+            }
+          }
+        } else {
+          toast({
+            title: "Person not found",
+            description: "We couldn't find anyone with that name online",
+            variant: "destructive",
+            duration: 3000,
+          });
+        }
+      } catch (error) {
+        console.error("Error searching online:", error);
+        toast({
+          title: "Search error",
+          description: "There was an error searching for profiles online",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } finally {
+        setIsSearching(false);
+      }
     }
   };
   
@@ -93,14 +149,27 @@ const Index = () => {
     // but we store the last command for display purposes
   };
   
-  // Update the person data when tasks are added or completed
   const handlePersonUpdate = (updatedPerson: Person) => {
     setSearchedPerson(updatedPerson);
   };
   
-  // Update AI response with new insights
   const handleAIResponse = (response: AIInsight) => {
     setAIResponse(response);
+  };
+  
+  const handleContactAdded = (newPerson: Person) => {
+    setSearchedPerson(newPerson);
+    setLastCommand(null);
+    setAIResponse(null);
+    
+    setTimeout(() => {
+      const insight = generateRelationshipInsight(newPerson);
+      setAIResponse({
+        message: insight,
+        sentiment: 'positive',
+        confidenceScore: Math.floor(Math.random() * 15) + 80 // 80-95% confidence
+      });
+    }, 1000);
   };
   
   return (
@@ -124,28 +193,42 @@ const Index = () => {
               )}
             </div>
             
-            <SearchBar 
-              onSearch={handleSearch} 
-              placeholder="Search for anyone, or see suggestions..."
-            />
-            
-            {allPeople.length > 0 && (
-              <div className="mt-10 text-center">
-                <p className="text-sm text-muted-foreground mb-3">
-                  Dataset includes {allPeople.length} people - Try searching for one of these:
-                </p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {allPeople.slice(0, 5).map(person => (
-                    <button
-                      key={person.id}
-                      onClick={() => handleSearch(person.name)}
-                      className="px-3 py-1 rounded-full bg-secondary/60 hover:bg-secondary transition-colors text-sm"
-                    >
-                      {person.name}
-                    </button>
-                  ))}
-                </div>
+            {isSearching ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <p className="text-lg font-medium">Searching online profiles...</p>
+                <p className="text-sm text-muted-foreground mt-2">This may take a moment</p>
               </div>
+            ) : (
+              <>
+                <SearchBar 
+                  onSearch={handleSearch} 
+                  placeholder="Search for anyone, or see suggestions..."
+                />
+                
+                <div className="mt-8 flex justify-center">
+                  <AddContactDialog onContactAdded={handleContactAdded} />
+                </div>
+                
+                {allPeople.length > 0 && (
+                  <div className="mt-10 text-center">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Dataset includes {allPeople.length} people - Try searching for one of these:
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {allPeople.slice(0, 5).map(person => (
+                        <button
+                          key={person.id}
+                          onClick={() => handleSearch(person.name)}
+                          className="px-3 py-1 rounded-full bg-secondary/60 hover:bg-secondary transition-colors text-sm"
+                        >
+                          {person.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </>

@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Plus, Search, Loader2, MapPin, Building, Briefcase } from 'lucide-react';
 import { searchProfiles, fetchProfileDetails, addPerson } from '@/utils/profileService';
 import { toast } from "@/components/ui/use-toast";
+import { Person } from '@/utils/mockData';
 
 interface ProfileResult {
   name: string;
@@ -18,10 +19,15 @@ interface ProfileResult {
   profileImage?: string;
   location?: string;
   bio?: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+  };
 }
 
 interface AddContactDialogProps {
-  onContactAdded: () => void;
+  onContactAdded: (person: Person) => void;
 }
 
 export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
@@ -52,6 +58,15 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
       const results = await searchProfiles(searchQuery);
       console.log("Search results:", results);
       setSearchResults(results);
+      
+      if (results.length === 0) {
+        toast({
+          title: "No results",
+          description: `No profiles found for "${searchQuery}"`,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error('Error searching profiles:', error);
       toast({
@@ -96,8 +111,8 @@ export function AddContactDialog({ onContactAdded }: AddContactDialogProps) {
         setSearchResults([]);
         setSelectedProfile(null);
         
-        // Notify parent component
-        onContactAdded();
+        // Notify parent component with the new person
+        onContactAdded(result);
       }
     } catch (error) {
       console.error('Error adding contact:', error);
