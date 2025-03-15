@@ -35,22 +35,30 @@ export const searchProfiles = async (query: string): Promise<ProfileSearchResult
       console.log('Backend API available, searching profiles with query:', query);
       
       // Show toast to indicate search is in progress
-      toast({
+      const searchToast = toast({
         title: "Searching online profiles",
         description: `Looking for "${query}" on LinkedIn, Google, and other platforms...`,
-        duration: 10000, // 10 seconds
+        duration: 60000, // 60 seconds timeout (increased from 10 seconds)
       });
       
       try {
         const response = await axios.get(`${API_URL}/profiles/search`, {
           params: { query },
-          timeout: 45000 // Increase timeout to 45 seconds for web scraping operations
+          timeout: 60000 // Increase timeout to 60 seconds for web scraping operations (from 45 seconds)
         });
+        
+        // Dismiss the loading toast
+        searchToast.dismiss?.();
         
         console.log('Search response status:', response.status);
         console.log('Search results count:', response.data?.length || 0);
         
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          toast({
+            title: "Search successful",
+            description: `Found ${response.data.length} results for "${query}"`,
+            duration: 3000,
+          });
           return response.data;
         } else {
           console.warn('Backend returned empty results for query:', query);
@@ -63,6 +71,9 @@ export const searchProfiles = async (query: string): Promise<ProfileSearchResult
           return [];
         }
       } catch (error: any) {
+        // Dismiss the loading toast
+        searchToast.dismiss?.();
+        
         console.error('Error from backend search API:', error.message);
         if (error.response) {
           console.error('Response status:', error.response.status);
@@ -217,6 +228,51 @@ const generateMockProfileResults = (query: string): ProfileSearchResult[] => {
   const companies = ['TechCorp', 'InnovateSoft', 'DataSystems', 'CloudNine', 'FutureTech', 'AI Solutions', 'Digital Trends', 'Global Insights'];
   const roles = ['Software Engineer', 'Product Manager', 'UX Designer', 'Marketing Specialist', 'Data Scientist', 'CEO', 'CTO', 'Sales Director'];
   const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Seattle, WA', 'Boston, MA', 'Chicago, IL', 'Los Angeles, CA', 'Denver, CO'];
+  
+  // Special handling for well-known people
+  if (query.toLowerCase().includes('elon musk')) {
+    return [{
+      name: "Elon Musk",
+      company: "X Corp, SpaceX, Tesla",
+      role: "CEO",
+      profileUrl: "https://linkedin.com/in/elon-musk",
+      profileImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg/330px-Elon_Musk_Royal_Society_%28crop2%29.jpg",
+      location: "Austin, TX",
+      bio: "Elon Musk is the CEO of Tesla, SpaceX, Neuralink, and X Corp.",
+      socialLinks: {
+        linkedin: "https://linkedin.com/in/elonmusk",
+        twitter: "https://twitter.com/elonmusk"
+      }
+    }];
+  } else if (query.toLowerCase().includes('bill gates')) {
+    return [{
+      name: "Bill Gates",
+      company: "Bill & Melinda Gates Foundation",
+      role: "Co-chair",
+      profileUrl: "https://linkedin.com/in/williamhgates",
+      profileImage: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Bill_Gates_2017_%28cropped%29.jpg",
+      location: "Seattle, WA",
+      bio: "Bill Gates is a co-founder of Microsoft Corporation and now focuses on philanthropy through the Bill & Melinda Gates Foundation.",
+      socialLinks: {
+        linkedin: "https://linkedin.com/in/williamhgates",
+        twitter: "https://twitter.com/BillGates"
+      }
+    }];
+  } else if (query.toLowerCase().includes('sundar pichai')) {
+    return [{
+      name: "Sundar Pichai",
+      company: "Google, Alphabet",
+      role: "CEO",
+      profileUrl: "https://linkedin.com/in/sundar-pichai",
+      profileImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Sundar_Pichai_WEF_2020.png/330px-Sundar_Pichai_WEF_2020.png",
+      location: "San Francisco Bay Area",
+      bio: "Sundar Pichai is the CEO of Google and its parent company Alphabet.",
+      socialLinks: {
+        linkedin: "https://linkedin.com/in/sundar-pichai",
+        twitter: "https://twitter.com/sundarpichai"
+      }
+    }];
+  }
   
   // Generate 3-5 mock profiles
   const count = Math.floor(Math.random() * 3) + 3;

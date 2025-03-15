@@ -1,19 +1,22 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, User, Globe, ExternalLink } from 'lucide-react';
+import { Search, X, User, Globe, ExternalLink, Loader2 } from 'lucide-react';
 import { getAllPeople, Person } from '../utils/mockData';
 import { useNavigate } from 'react-router-dom';
+import { toast } from "@/components/ui/use-toast";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
   className?: string;
+  isSearching?: boolean;
 }
 
 export const SearchBar = ({ 
   onSearch, 
   placeholder = "Search for a person...", 
-  className = "" 
+  className = "",
+  isSearching = false
 }: SearchBarProps) => {
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -46,6 +49,16 @@ export const SearchBar = ({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
+      // Don't allow new searches while one is in progress
+      if (isSearching) {
+        toast({
+          title: "Search in progress",
+          description: "Please wait for the current search to complete",
+          duration: 3000,
+        });
+        return;
+      }
+      
       onSearch(query);
       setShowSuggestions(false);
     }
@@ -140,10 +153,20 @@ export const SearchBar = ({
           
           <button
             type="submit"
-            className="flex items-center gap-1.5 flex-shrink-0 h-full px-5 py-3 bg-primary text-primary-foreground text-sm font-medium transition-colors hover:bg-primary/90"
+            disabled={isSearching}
+            className="flex items-center gap-1.5 flex-shrink-0 h-full px-5 py-3 bg-primary text-primary-foreground text-sm font-medium transition-colors hover:bg-primary/90 disabled:bg-primary/70 disabled:cursor-not-allowed"
           >
-            <ExternalLink size={14} className="text-primary-foreground" />
-            <span>Search Online</span>
+            {isSearching ? (
+              <>
+                <Loader2 size={14} className="text-primary-foreground animate-spin" />
+                <span>Searching...</span>
+              </>
+            ) : (
+              <>
+                <ExternalLink size={14} className="text-primary-foreground" />
+                <span>Search Online</span>
+              </>
+            )}
           </button>
         </div>
         

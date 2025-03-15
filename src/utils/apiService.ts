@@ -5,6 +5,7 @@ import { processCommand } from './aiService';
 
 // Backend API URL
 const API_URL = 'http://localhost:5000/api';
+let backendAvailabilityCache: { available: boolean; timestamp: number } | null = null;
 
 // Interfaces for API responses
 interface AIResponse {
@@ -19,30 +20,44 @@ interface AIResponse {
 // Check if the backend is available
 export const checkBackendAvailability = async (): Promise<boolean> => {
   try {
+    // Check cache first (valid for 30 seconds)
+    if (backendAvailabilityCache && (Date.now() - backendAvailabilityCache.timestamp < 30000)) {
+      console.log('Using cached backend availability:', backendAvailabilityCache.available);
+      return backendAvailabilityCache.available;
+    }
+    
     console.log('Checking backend API availability...');
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
     
-    const response = await fetch(`${API_URL}/health`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      signal: controller.signal
-    });
+    try {
+      const response = await fetch(`${API_URL}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal
+      });
 
-    clearTimeout(timeoutId);
-    
-    if (response.ok) {
-      console.log('Backend API is available and healthy');
-      return true;
-    } else {
-      console.log(`Backend API returned an error status: ${response.status}`);
+      clearTimeout(timeoutId);
+      
+      const isAvailable = response.ok;
+      console.log(`Backend API is ${isAvailable ? 'available' : 'unavailable'}`);
+      
+      // Cache the result
+      backendAvailabilityCache = { available: isAvailable, timestamp: Date.now() };
+      return isAvailable;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      console.error('Backend API connection error:', error);
+      
+      // Cache the negative result
+      backendAvailabilityCache = { available: false, timestamp: Date.now() };
       return false;
     }
   } catch (error) {
-    console.error('Backend API connection error:', error);
+    console.error('Error checking backend availability:', error);
     return false;
   }
 };
