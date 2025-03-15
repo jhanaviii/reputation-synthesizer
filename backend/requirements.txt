@@ -8,12 +8,14 @@ transformers==4.36.2
 faker==19.6.2
 python-dotenv==1.0.0
 joblib==1.3.2
-torch==2.1.1
+# Make torch installation more flexible
+torch>=2.0.0,<3.0.0
 sentence-transformers==2.2.2
 nltk==3.8.1
 beautifulsoup4==4.12.2
 requests==2.31.0
-selenium==4.16.0
+# Make selenium installation more flexible
+selenium>=4.10.0
 webdriver-manager==4.0.1
 lxml==4.9.3
 pyppeteer==1.0.2
