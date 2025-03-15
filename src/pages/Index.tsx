@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import MainLayout from '../layouts/MainLayout';
 import LandingHero from '../components/LandingHero';
@@ -14,7 +13,7 @@ import { generateRelationshipInsight } from '../utils/aiService';
 import { checkBackendAvailability } from '../utils/apiService';
 import { searchProfiles, fetchProfileDetails, addPerson } from '../utils/profileService';
 import { AddContactDialog } from '../components/AddContactDialog';
-import { Loader2, Globe } from 'lucide-react';
+import { Loader2, Globe, AlertTriangle } from 'lucide-react';
 
 interface AIInsight {
   message: string;
@@ -32,6 +31,7 @@ const Index = () => {
   const [isBackendAvailable, setIsBackendAvailable] = useState(false);
   const [allPeople, setAllPeople] = useState<Person[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   
   useEffect(() => {
     const checkBackend = async () => {
@@ -57,6 +57,9 @@ const Index = () => {
   const handleSearch = async (query: string) => {
     if (!query.trim()) return;
     
+    setIsSearching(true);
+    setSearchError(null);
+    
     // First check if person exists in local database
     const localPerson = findPersonByName(query);
     
@@ -80,16 +83,15 @@ const Index = () => {
         });
       }, 1000);
       
+      setIsSearching(false);
       return;
     }
     
     // If not found locally, search online
-    setIsSearching(true);
-    
     toast({
       title: "Searching online...",
-      description: `Looking for "${query}" profiles online`,
-      duration: 5000,
+      description: `Looking for "${query}" profiles online (this might take up to 30 seconds)`,
+      duration: 30000,
     });
     
     try {
@@ -133,15 +135,19 @@ const Index = () => {
           }
         }
       } else {
+        setSearchError(`We couldn't find anyone with the name "${query}" online. Try a different search term or check spelling.`);
+        
         toast({
           title: "Person not found",
-          description: "We couldn't find anyone with that name online",
+          description: "We couldn't find anyone with that name online. Try a different search term.",
           variant: "destructive",
-          duration: 3000,
+          duration: 5000,
         });
       }
     } catch (error) {
       console.error("Error searching online:", error);
+      setSearchError("There was an error searching online. Please try again.");
+      
       toast({
         title: "Search error",
         description: "There was an error searching for profiles online",
@@ -213,7 +219,7 @@ const Index = () => {
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
                 <p className="text-lg font-medium">Searching online profiles...</p>
-                <p className="text-sm text-muted-foreground mt-2">This may take a moment (10-20 seconds)</p>
+                <p className="text-sm text-muted-foreground mt-2">This may take up to 30 seconds</p>
               </div>
             ) : (
               <>
@@ -221,6 +227,19 @@ const Index = () => {
                   onSearch={handleSearch} 
                   placeholder="Search for anyone by name..."
                 />
+                
+                {searchError && (
+                  <div className="mt-6 p-4 bg-destructive/10 rounded-lg border border-destructive/20 flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-destructive">Search failed</p>
+                      <p className="text-sm text-muted-foreground mt-1">{searchError}</p>
+                      <p className="text-sm mt-2">
+                        Try searching for a well-known person like "Elon Musk" or "Bill Gates" instead.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="mt-8 flex justify-center">
                   <AddContactDialog onContactAdded={handleContactAdded} />

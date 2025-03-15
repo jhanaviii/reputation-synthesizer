@@ -32,24 +32,52 @@ export const searchProfiles = async (query: string): Promise<ProfileSearchResult
     const isBackendAvailable = await checkBackendAvailability();
     
     if (isBackendAvailable) {
-      console.log('Backend API available, searching profiles...');
-      const response = await axios.get(`${API_URL}/profiles/search`, {
-        params: { query },
-        timeout: 30000 // Increase timeout to 30 seconds for web scraping operations
+      console.log('Backend API available, searching profiles with query:', query);
+      
+      // Show toast to indicate search is in progress
+      toast({
+        title: "Searching online profiles",
+        description: `Looking for "${query}" on LinkedIn, Google, and other platforms...`,
+        duration: 10000, // 10 seconds
       });
       
-      console.log('Search results:', response.data);
-      
-      if (response.data && response.data.length > 0) {
-        return response.data;
-      } else {
+      try {
+        const response = await axios.get(`${API_URL}/profiles/search`, {
+          params: { query },
+          timeout: 45000 // Increase timeout to 45 seconds for web scraping operations
+        });
+        
+        console.log('Search response status:', response.status);
+        console.log('Search results count:', response.data?.length || 0);
+        
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          return response.data;
+        } else {
+          console.warn('Backend returned empty results for query:', query);
+          toast({
+            title: "No results found",
+            description: `No online profiles found for "${query}". Try a different name or search term.`,
+            variant: "destructive",
+            duration: 3000,
+          });
+          return [];
+        }
+      } catch (error: any) {
+        console.error('Error from backend search API:', error.message);
+        if (error.response) {
+          console.error('Response status:', error.response.status);
+          console.error('Response data:', error.response.data);
+        }
+        
         toast({
-          title: "No results found",
-          description: `No online profiles found for "${query}"`,
+          title: "Search error",
+          description: "The backend encountered an error while searching. Using sample data instead.",
           variant: "destructive",
           duration: 3000,
         });
-        return [];
+        
+        // Return mock data as fallback
+        return generateMockProfileResults(query);
       }
     } else {
       console.log('Backend API is not available, using fallback data');
@@ -65,7 +93,7 @@ export const searchProfiles = async (query: string): Promise<ProfileSearchResult
   } catch (error) {
     console.error('Error searching profiles:', error);
     toast({
-      title: "Error",
+      title: "Search error",
       description: "Failed to search profiles. Using sample data instead.",
       variant: "destructive",
       duration: 3000,

@@ -19,24 +19,30 @@ interface AIResponse {
 // Check if the backend is available
 export const checkBackendAvailability = async (): Promise<boolean> => {
   try {
+    console.log('Checking backend API availability...');
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     const response = await fetch(`${API_URL}/health`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
       },
-      // Short timeout to quickly fail if backend is not available
-      signal: AbortSignal.timeout(3000)
+      signal: controller.signal
     });
 
+    clearTimeout(timeoutId);
+    
     if (response.ok) {
-      console.log('Backend API is available');
+      console.log('Backend API is available and healthy');
       return true;
     } else {
-      console.log('Backend API returned an error');
+      console.log(`Backend API returned an error status: ${response.status}`);
       return false;
     }
   } catch (error) {
-    console.log('Backend API is not available');
+    console.error('Backend API connection error:', error);
     return false;
   }
 };

@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, User, Globe } from 'lucide-react';
+import { Search, X, User, Globe, ExternalLink } from 'lucide-react';
 import { getAllPeople, Person } from '../utils/mockData';
 import { useNavigate } from 'react-router-dom';
 
@@ -142,8 +142,8 @@ export const SearchBar = ({
             type="submit"
             className="flex items-center gap-1.5 flex-shrink-0 h-full px-5 py-3 bg-primary text-primary-foreground text-sm font-medium transition-colors hover:bg-primary/90"
           >
-            <Globe size={14} className="text-primary-foreground" />
-            <span>Search</span>
+            <ExternalLink size={14} className="text-primary-foreground" />
+            <span>Search Online</span>
           </button>
         </div>
         
@@ -153,6 +153,13 @@ export const SearchBar = ({
           </div>
         </div>
       </form>
+      
+      {/* Helpful search hint */}
+      {isFocused && (
+        <div className="absolute -bottom-7 left-0 right-0 text-xs text-center text-muted-foreground">
+          ⚡ Press "Search Online" to find real profiles from LinkedIn, Google, and other platforms
+        </div>
+      )}
       
       {/* User suggestions dropdown - Show by default, not just when typing */}
       {showSuggestions && suggestions.length > 0 && (
@@ -167,7 +174,7 @@ export const SearchBar = ({
                 <User size={12} className="opacity-70" />
                 Type to search locally
                 <Globe size={12} className="opacity-70 ml-1" />
-                Press "Search" for online results
+                Press "Search Online" for internet results
               </span>
             </div>
           </div>
